@@ -1,0 +1,41 @@
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "build": "expo build:web",
+    "eject": "expo eject",
+    "deploy": "gh-pages -d web-build",
+    "predeploy": "expo build:web"
+  },
+  "dependencies": {
+    "@eva-design/eva": "^2.0.0",
+    "@expo/webpack-config": "^0.12.12",
+    "@react-native-community/masked-view": "0.1.6",
+    "@react-navigation/drawer": "^5.8.1",
+    "@react-navigation/material-top-tabs": "^5.2.10",
+    "@react-navigation/native": "^5.5.0",
+    "@react-navigation/stack": "^5.4.1",
+    "@ui-kitten/components": "^5.0.0",
+    "@ui-kitten/eva-icons": "^5.0.0",
+    "expo": "~37.0.3",
+    "react": "~16.9.0",
+    "react-dom": "~16.9.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-37.0.1.tar.gz",
+    "react-native-gesture-handler": "~1.6.0",
+    "react-native-reanimated": "~1.7.0",
+    "react-native-safe-area-context": "0.7.3",
+    "react-native-screens": "~2.2.0",
+    "react-native-svg": "11.0.1",
+    "react-native-tab-view": "^2.14.4",
+    "react-native-web": "~0.11.7"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "babel-preset-expo": "~8.1.0",
+    "gh-pages": "^3.0.0"
+  },
+  "private": true
+}
