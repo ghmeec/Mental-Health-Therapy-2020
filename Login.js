@@ -132,7 +132,16 @@ const TopTabBar = ({ navigation, state }) => (
 
     <TabBar
         selectedIndex={state.index}
-        onSelect={index => navigation.navigate(state.routeNames[index])}>
+        onSelect={index => navigation.navigate(state.routeNames[index])}
+        style={{
+            height:50,
+            borderBottomColor:"#DDD",
+            borderBottomWidth:1
+        }}
+        indicatorStyle={{
+            backgroundColor:"white"
+        }}
+        >
         <Tab title='Login' />
         <Tab title='Register' />
     </TabBar>
@@ -147,8 +156,8 @@ const TabNavigator = () => (
             "width": 1,
             "height": 1
         },
-        "shadowOpacity": 0.5,
-        "shadowRadius": 10,
+        "shadowOpacity": 0.25,
+        "shadowRadius": 5,
         marginHorizontal:16,
       
 
