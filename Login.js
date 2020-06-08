@@ -165,7 +165,6 @@ export const Login = () => (
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor:"red",
     }}>
         <TabNavigator />
     </View>
