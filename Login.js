@@ -73,7 +73,7 @@ const UsersScreen = () => {
 
     return (
         <Layout style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ marginVertical: 10, color: "red" }}>{errorMessage}</Text>
+            <Text style={{ marginVertical: 10, color: "red",width:260 }}>{errorMessage}</Text>
             <Input
                 label='Email'
                 placeholder='ghmatc@gmail.com'
