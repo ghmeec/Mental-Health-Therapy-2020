@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, TouchableWithoutFeedback } from 'react-native'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { TabBar, Tab, Layout, Text, Input, Icon, Button } from '@ui-kitten/components';
+import { TabBar, Tab, Layout, Text, Input, Icon, Button,Spinner } from '@ui-kitten/components';
+import firebase from "firebase/app";
+import "firebase/auth";
 
 
 const { Navigator, Screen } = createMaterialTopTabNavigator();
@@ -16,6 +18,7 @@ const UsersScreen = () => {
     const toggleSecureEntry = () => {
         setSecureTextEntry(!secureTextEntry);
     };
+
     const renderIcon = (props) => (
         <TouchableWithoutFeedback onPress={toggleSecureEntry}>
             <Icon {...props} name={secureTextEntry ? 'eye-off' : 'eye'} />
@@ -57,6 +60,7 @@ const UsersScreen = () => {
             >
                 Login
              </Button>
+        
         </Layout>)
 };
 
@@ -169,12 +173,12 @@ const TabNavigator = () => (
     </View>
 );
 
-export const Login = () => (
+export const Login = ({onClick}) => (
     <View style={{
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
     }}>
-        <TabNavigator />
+        <TabNavigator onClick={onClick}/>
     </View>
 );
