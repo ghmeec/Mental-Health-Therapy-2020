@@ -1,32 +1,77 @@
-import React from 'react';
+import React,{useState} from 'react';
 import { View, TouchableWithoutFeedback } from 'react-native'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { TabBar, Tab, Layout, Text, Input, Icon, Button,Spinner } from '@ui-kitten/components';
-import firebase from "firebase/app";
-import "firebase/auth";
 
+import "firebase/auth";
+import { useAuthState } from 'react-firebase-hooks/auth';
+import {FirebaseContext} from './utils/firebase'
 
 const { Navigator, Screen } = createMaterialTopTabNavigator();
 const AlertIcon = (props) => (
     <Icon {...props} name='alert-circle-outline' />
 );
 const UsersScreen = () => {
+    const firebase=React.useContext(FirebaseContext)
+    const [user,error] = useAuthState(firebase.auth());
+
+    const [loading,setLoading]=React.useState(false)
+    const [loginFailed,setloginFailed]=useState(false)
+    const [errorMessage,setErrorMessage]=useState("")
+
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
 
+    console.log("Loading state : ",loading)
+   
+    
+    const login = () => {
+        setloginFailed(false)
+        setErrorMessage("")
+        enterLoading()
+        firebase.auth().signInWithEmailAndPassword(email,password)
+        .then(res=>{
+            exitLoading()
+          })
+          .
+          catch(error=>{
+            console.log("login failed ",error)
+            exitLoading()
+            setloginFailed(true)
+            setErrorMessage(error.message)
+           
+          })
+    };
+
+    const logout = () => {
+        firebase.auth().signOut();
+      };
+
     const toggleSecureEntry = () => {
         setSecureTextEntry(!secureTextEntry);
     };
+
+    const enterLoading = () => {
+        setLoading(true)
+      };
+    
+      const exitLoading=()=>{
+        setLoading(false)
+      }
 
     const renderIcon = (props) => (
         <TouchableWithoutFeedback onPress={toggleSecureEntry}>
             <Icon {...props} name={secureTextEntry ? 'eye-off' : 'eye'} />
         </TouchableWithoutFeedback>
     );
-
+    const LoadingIndicator = (props) => (
+          <Spinner size='small' style={{backgroundColor:"white"}} />
+      );
+      
     return (
         <Layout style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{marginVertical:10,color:"red"}}>{errorMessage}</Text>
             <Input
                 label='Email'
                 placeholder='ghmatc@gmail.com'
@@ -52,13 +97,17 @@ const UsersScreen = () => {
                 secureTextEntry={secureTextEntry}
                 onChangeText={nextValue => setPassword(nextValue)}
             />
+            <Text>{loading}</Text>
             <Button
                 style={{
                     width: 260,
                     marginTop:16
                 }}
+
+                onPress={login}
+                disabled={loading}
             >
-                Login
+                {loading?<LoadingIndicator></LoadingIndicator>:"Login"}
              </Button>
         
         </Layout>)
@@ -173,12 +222,12 @@ const TabNavigator = () => (
     </View>
 );
 
-export const Login = ({onClick}) => (
+export const Login = ({}) => (
     <View style={{
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
     }}>
-        <TabNavigator onClick={onClick}/>
+        <TabNavigator/>
     </View>
 );

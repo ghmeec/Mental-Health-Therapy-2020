@@ -1,6 +1,6 @@
 import "react-native-gesture-handler";
 import React, { useState, useEffect } from "react";
-import { Button, View } from "react-native";
+import { Button, View,ActivityIndicator } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { NavigationContainer } from "@react-navigation/native";
 import {
@@ -14,23 +14,25 @@ import { IndexPath } from '@ui-kitten/components';
 // import { mapping, light, dark } from "@eva-design/eva";
 import * as eva from "@eva-design/eva";
 
-import firebase from "firebase/app";
+import FirebaseProvider,{FirebaseContext} from './utils/firebase'
+import { useAuthState } from 'react-firebase-hooks/auth';
+// import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/database";
 
 import { Login } from "./Login";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyC4oKpL8g6PIMYZQWctzhBleqb0FulFWJg",
-  authDomain: "uqsapp.firebaseapp.com",
-  databaseURL: "https://uqsapp.firebaseio.com",
-  projectId: "uqsapp",
-  storageBucket: "uqsapp.appspot.com",
-  messagingSenderId: "1092090054069",
-  appId: "1:1092090054069:web:4574591bba04c55c6e45fc"
-};
+// const firebaseConfig = {
+//   apiKey: "AIzaSyC4oKpL8g6PIMYZQWctzhBleqb0FulFWJg",
+//   authDomain: "uqsapp.firebaseapp.com",
+//   databaseURL: "https://uqsapp.firebaseio.com",
+//   projectId: "uqsapp",
+//   storageBucket: "uqsapp.appspot.com",
+//   messagingSenderId: "1092090054069",
+//   appId: "1:1092090054069:web:4574591bba04c55c6e45fc"
+// };
 
-firebase.initializeApp(firebaseConfig);
+// firebase.initializeApp(firebaseConfig);
 
 function HomeScreen({ navigation }) {
   return (
@@ -130,71 +132,93 @@ const AuthenticatedHome = () => {
   );
 };
 
-const provider = new firebase.auth.GoogleAuthProvider();
+// const provider = new firebase.auth.GoogleAuthProvider();
+const Routes=()=>{
+  const firebase=React.useContext(FirebaseContext)
+  const [user,error,initialising] = useAuthState(firebase.auth());
+  
+
+  console.log("is user loading : ",initialising)
+ 
+  if(!user){
+    return(
+      <Login></Login>
+    )
+  }
+
+  if(user){
+    return(
+      <AuthenticatedHome />
+    )
+  }
+  return (
+    <View style={{flex:1,alignItems:"center",justifyContent:"center"}}>
+        <ActivityIndicator></ActivityIndicator>
+    </View>
+  );
+}
 
 export default function App() {
   const [authState, setAuthState] = useState({ status: "loading" });
-  const [isAuth, setIsAuth] = React.useState(false);
 
-  useEffect(() => {
-    return firebase.auth().onAuthStateChanged(async user => {
-      if (user) {
-        const token = await user.getIdToken();
-        const idTokenResult = await user.getIdTokenResult();
-        const hasuraClaim =
-          idTokenResult.claims["https://hasura.io/jwt/claims"];
 
-        if (hasuraClaim) {
-          setAuthState({ status: "in", user, token });
-        } else {
-          // Check if refresh is required.
-          const metadataRef = firebase
-            .database()
-            .ref("metadata/" + user.uid + "/refreshTime");
+  // useEffect(() => {
+  //   return firebase.auth().onAuthStateChanged(async user => {
+  //     if (user) {
+  //       const token = await user.getIdToken();
+  //       const idTokenResult = await user.getIdTokenResult();
+  //       const hasuraClaim =
+  //         idTokenResult.claims["https://hasura.io/jwt/claims"];
 
-          metadataRef.on("value", async (data) => {
-            if(!data.exists) return
-            // Force refresh to pick up the latest custom claims changes.
-            const token = await user.getIdToken(true);
-            setAuthState({ status: "in", user, token });
-          });
-        }
-      } else {
-        setAuthState({ status: "out" });
-      }
-    });
-  }, []);
+  //       if (hasuraClaim) {
+  //         setAuthState({ status: "in", user, token });
+  //       } else {
+  //         // Check if refresh is required.
+  //         const metadataRef = firebase
+  //           .database()
+  //           .ref("metadata/" + user.uid + "/refreshTime");
 
-  const signInWithGoogle = async () => {
-    try {
-      const user=await firebase.auth().signInWithEmailAndPassword("sample@sample.com","samplasdasde")
-      console.log("User signed it : ",user)
-    } catch (error) {
-      console.log("Error happened " ,error);
-    }
-  };
+  //         metadataRef.on("value", async (data) => {
+  //           if(!data.exists) return
+  //           // Force refresh to pick up the latest custom claims changes.
+  //           const token = await user.getIdToken(true);
+  //           setAuthState({ status: "in", user, token });
+  //         });
+  //       }
+  //     } else {
+  //       setAuthState({ status: "out" });
+  //     }
+  //   });
+  // }, []);
 
-  const signOut = async () => {
-    try {
-      setAuthState({ status: "loading" });
-      await firebase.auth().signOut();
-      setAuthState({ status: "out" });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const signInWithGoogle = async () => {
+  //   try {
+  //     const user=await firebase.auth().signInWithEmailAndPassword("sample@sample.com","samplasdasde")
+  //     console.log("User signed it : ",user)
+  //   } catch (error) {
+  //     console.log("Error happened " ,error);
+  //   }
+  // };
+
+  // const signOut = async () => {
+  //   try {
+  //     setAuthState({ status: "loading" });
+  //     await firebase.auth().signOut();
+  //     setAuthState({ status: "out" });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
 
   return (
-    <>
+    <FirebaseProvider>
       <IconRegistry icons={EvaIconsPack} />
       <ApplicationProvider {...eva} theme={{ ...eva.light }}>
         <NavigationContainer>
-          <button onClick={signInWithGoogle}>Sign in with Google</button>
-          {!isAuth && <Login onClick={signInWithGoogle}></Login>}
-          {isAuth && <AuthenticatedHome />}
+          <Routes/>
         </NavigationContainer>
       </ApplicationProvider>
-    </>
+    </FirebaseProvider>
   );
 }
