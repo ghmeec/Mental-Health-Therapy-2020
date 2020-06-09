@@ -1,29 +1,79 @@
-import React from 'react';
-import { View, TouchableWithoutFeedback } from 'react-native'
+import React, { useState } from 'react';
+import { View, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { TabBar, Tab, Layout, Text, Input, Icon, Button } from '@ui-kitten/components';
+import { TabBar, Tab, Layout, Text, Input, Icon, Button, Spinner } from '@ui-kitten/components';
 
+import "firebase/auth";
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { FirebaseContext } from './utils/firebase'
 
 const { Navigator, Screen } = createMaterialTopTabNavigator();
 const AlertIcon = (props) => (
     <Icon {...props} name='alert-circle-outline' />
 );
 const UsersScreen = () => {
+    const firebase = React.useContext(FirebaseContext)
+    const [user, error] = useAuthState(firebase.auth());
+
+    const [loading, setLoading] = React.useState(false)
+    const [loginFailed, setloginFailed] = useState(false)
+    const [loginSuccess, setLoginSuccess] = useState(false)
+    const [errorMessage, setErrorMessage] = useState("")
+
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
 
+    console.log("Loading state : ", loading)
+
+
+    const login = () => {
+        setloginFailed(false)
+        setLoginSuccess(false)
+        setErrorMessage("")
+        enterLoading()
+        firebase.auth().signInWithEmailAndPassword(email, password)
+            .then(res => {
+                exitLoading()
+                setloginFailed(false)
+                setLoginSuccess(true)
+            })
+            .
+            catch(error => {
+                console.log("login failed ", error)
+                exitLoading()
+                setloginFailed(true)
+                setErrorMessage(error.message)
+                setLoginSuccess(false)
+
+            })
+    };
+
+  
     const toggleSecureEntry = () => {
         setSecureTextEntry(!secureTextEntry);
     };
+
+    const enterLoading = () => {
+        setLoading(true)
+    };
+
+    const exitLoading = () => {
+        setLoading(false)
+    }
+
     const renderIcon = (props) => (
         <TouchableWithoutFeedback onPress={toggleSecureEntry}>
             <Icon {...props} name={secureTextEntry ? 'eye-off' : 'eye'} />
         </TouchableWithoutFeedback>
     );
+    const LoadingIndicator = (props) => (
+        <ActivityIndicator size={"small"} color="white"></ActivityIndicator>
+    );
 
     return (
         <Layout style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ marginVertical: 10, color: "red" }}>{errorMessage}</Text>
             <Input
                 label='Email'
                 placeholder='ghmatc@gmail.com'
@@ -49,14 +99,20 @@ const UsersScreen = () => {
                 secureTextEntry={secureTextEntry}
                 onChangeText={nextValue => setPassword(nextValue)}
             />
+            <Text>{loading}</Text>
             <Button
                 style={{
                     width: 260,
-                    marginTop:16
+                    marginTop: 16
                 }}
+
+                onPress={login}
+                disabled={loading}
+                status={(loginSuccess)&&"success"}
             >
-                Login
-             </Button>
+                {loading ? <LoadingIndicator></LoadingIndicator> : loginSuccess?"Redireting...":"Login"}
+            </Button>
+
         </Layout>)
 };
 
@@ -134,14 +190,14 @@ const TopTabBar = ({ navigation, state }) => (
         selectedIndex={state.index}
         onSelect={index => navigation.navigate(state.routeNames[index])}
         style={{
-            height:50,
-            borderBottomColor:"#DDD",
-            borderBottomWidth:1
+            height: 50,
+            borderBottomColor: "#DDD",
+            borderBottomWidth: 1
         }}
         indicatorStyle={{
-            backgroundColor:"white"
+            backgroundColor: "white"
         }}
-        >
+    >
         <Tab title='Login' />
         <Tab title='Register' />
     </TabBar>
@@ -158,8 +214,8 @@ const TabNavigator = () => (
         },
         "shadowOpacity": 0.25,
         "shadowRadius": 5,
-        marginHorizontal:16,
-      
+        marginHorizontal: 16,
+
 
     }}>
         <Navigator tabBar={props => <TopTabBar {...props} />}>
@@ -169,7 +225,7 @@ const TabNavigator = () => (
     </View>
 );
 
-export const Login = () => (
+export const Login = ({ }) => (
     <View style={{
         flex: 1,
         alignItems: "center",
