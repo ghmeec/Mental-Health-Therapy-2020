@@ -25,7 +25,7 @@ const UsersScreen = () => {
     return (
         <Layout style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Input
-                label='email'
+                label='Email'
                 placeholder='ghmatc@gmail.com'
                 style={{
                     width: 260
@@ -88,7 +88,7 @@ const OrdersScreen = () => {
                 onChangeText={nextValue => setFullName(nextValue)}
             />
             <Input
-                label='email'
+                label='Email'
                 placeholder='ghmatc@gmail.com'
                 style={{
                     width: 260
