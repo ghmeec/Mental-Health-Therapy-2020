@@ -134,7 +134,7 @@ const Drawer = createDrawerNavigator();
 
 const AuthenticatedHome = () => {
   return (
-    <Drawer.Navigator initialRouteName="Home" drawerType="permanent" >
+    <Drawer.Navigator initialRouteName="Home"  >
       <Drawer.Screen name="Home" component={HomeScreen} />
       <Drawer.Screen name="Notifications" component={NotificationsScreen} />
       <Drawer.Screen name="My Account" component={MyAccount} />
@@ -161,6 +161,7 @@ const Routes = () => {
         const hasuraClaim =
           idTokenResult.claims["https://hasura.io/jwt/claims"];
 
+        console.log("The current user : ",user)
         if (hasuraClaim) {
           setAuthState({ status: "in", user, token });
         } else {
@@ -187,6 +188,7 @@ const Routes = () => {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <ActivityIndicator size={"large"}></ActivityIndicator>
+        <Text>Please Waiting while we are setting up environment for you...</Text>
       </View>
     );
   }
