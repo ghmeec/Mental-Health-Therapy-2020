@@ -11,6 +11,10 @@ const { Navigator, Screen } = createMaterialTopTabNavigator();
 const AlertIcon = (props) => (
     <Icon {...props} name='alert-circle-outline' />
 );
+
+const LoadingIndicator = (props) => (
+    <ActivityIndicator size={"small"} color="white"></ActivityIndicator>
+);
 const UsersScreen = () => {
     const firebase = React.useContext(FirebaseContext)
     const [user, error] = useAuthState(firebase.auth());
@@ -67,9 +71,7 @@ const UsersScreen = () => {
             <Icon {...props} name={secureTextEntry ? 'eye-off' : 'eye'} />
         </TouchableWithoutFeedback>
     );
-    const LoadingIndicator = (props) => (
-        <ActivityIndicator size={"small"} color="white"></ActivityIndicator>
-    );
+   
 
     return (
         <Layout style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -117,14 +119,53 @@ const UsersScreen = () => {
 };
 
 const OrdersScreen = () => {
+    const firebase = React.useContext(FirebaseContext)
+
     const [fullName, setFullName] = React.useState('');
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
 
+    const [loading, setLoading] = React.useState(false)
+    const [errorMessage, setErrorMessage] = useState("")
+    const [loginSuccess, setLoginSuccess] = useState(false)
+
+
     const toggleSecureEntry = () => {
         setSecureTextEntry(!secureTextEntry);
     };
+
+    const handleSignUp=()=>{
+        setErrorMessage("")
+        setLoading(true)
+        firebase.auth().createUserWithEmailAndPassword(email, password)
+        .then(res=>{
+            setLoading(false)
+
+            console.log("User registered successfull ",res)
+            var user = firebase.auth().currentUser;
+
+            user.updateProfile({
+                displayName: fullName,
+              }).then(function() {
+                // Update successful.
+                console.log("Successfully updated user profile")
+
+              }).catch(function(error) {
+                  console.log("Failed to update profile")
+                // An error happened.
+              
+            });
+            setLoginSuccess(true)
+            setErrorMessage("")
+        })
+        .catch(function(error) {
+            console.log("Failed to create the user ",error)
+            setLoading(false)
+            setLoginSuccess(false)
+            setErrorMessage(error.message)
+          });
+    }
     const renderIcon = (props) => (
         <TouchableWithoutFeedback onPress={toggleSecureEntry}>
             <Icon {...props} name={secureTextEntry ? 'eye-off' : 'eye'} />
@@ -132,6 +173,7 @@ const OrdersScreen = () => {
     );
     return (
         <Layout style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ marginVertical: 10, color: "red",width:260 }}>{errorMessage}</Text>
             <Input
                 label='Full Name'
                 placeholder='Andrew Thomas'
@@ -172,9 +214,12 @@ const OrdersScreen = () => {
                     width: 260,
                     marginTop: 16
                 }}
-
+                onPress={handleSignUp}
+                disabled={loading}
+                status={(loginSuccess)&&"success"}
             >
-                Register
+                {loading ? <LoadingIndicator></LoadingIndicator> : loginSuccess?"Redireting...":"Register"}
+
              </Button>
 
         </Layout>
