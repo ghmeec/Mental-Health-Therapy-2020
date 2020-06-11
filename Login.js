@@ -5,7 +5,18 @@ import { TabBar, Tab, Layout, Text, Input, Icon, Button, Spinner } from '@ui-kit
 
 import "firebase/auth";
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { FirebaseContext } from './utils/firebase'
+import { FirebaseContext } from './utils/firebase';
+
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import FirebaseProvider from './utils/firebase'
+import { EvaIconsPack } from "@ui-kitten/eva-icons";
+import {
+    ApplicationProvider,
+    IconRegistry,
+  } from "@ui-kitten/components";
+  import * as eva from "@eva-design/eva";
+import Drawer from './Drawer';
 
 const { Navigator, Screen } = createMaterialTopTabNavigator();
 const AlertIcon = (props) => (
@@ -31,12 +42,14 @@ const UsersScreen = () => {
         setloginFailed(false)
         setLoginSuccess(false)
         setErrorMessage("")
+  
         enterLoading()
         firebase.auth().signInWithEmailAndPassword(email, password)
             .then(res => {
                 exitLoading()
                 setloginFailed(false)
                 setLoginSuccess(true)
+               
             })
             .
             catch(error => {
