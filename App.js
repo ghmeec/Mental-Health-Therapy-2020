@@ -19,14 +19,22 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import "firebase/auth";
 import "firebase/database"
 import { Login } from "./Login";
+import Drawer from './Drawer';
+import Example from './Example'
+
+  
+    
 
 
-function HomeScreen({ navigation }) {
+  
+
+
+/*function HomeScreen({ navigation }) {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
       <Button
         onPress={() => navigation.navigate("Notifications")}
-        title="notifications"
+        title="Notifications"
       />
     </View>
   );
@@ -134,7 +142,7 @@ const Drawer = createDrawerNavigator();
 
 const AuthenticatedHome = () => {
   return (
-    <Drawer.Navigator initialRouteName="Home" drawerType="permanent" >
+    <Drawer.Navigator initialRouteName="Home"  >
       <Drawer.Screen name="Home" component={HomeScreen} />
       <Drawer.Screen name="Notifications" component={NotificationsScreen} />
       <Drawer.Screen name="My Account" component={MyAccount} />
@@ -144,9 +152,9 @@ const AuthenticatedHome = () => {
       <Drawer.Screen name="Logout" component={Logout} />
     </Drawer.Navigator>
   );
-};
+};*/
 
-// const provider = new firebase.auth.GoogleAuthProvider();
+/*// const provider = new firebase.auth.GoogleAuthProvider();
 const Routes = () => {
   const firebase = React.useContext(FirebaseContext)
   // const [user,error,initialising] = useAuthState(firebase.auth());
@@ -202,7 +210,7 @@ const Routes = () => {
     )
   }
 
-}
+}*/
 
 export default function App() {
   const [authState, setAuthState] = useState({ status: "loading" });
@@ -262,9 +270,11 @@ export default function App() {
       <IconRegistry icons={EvaIconsPack} />
       <ApplicationProvider {...eva} theme={{ ...eva.light }}>
         <NavigationContainer>
-          <Routes />
+        <Drawer/>
+        <Example/>
         </NavigationContainer>
       </ApplicationProvider>
     </FirebaseProvider>
+
   );
 }
