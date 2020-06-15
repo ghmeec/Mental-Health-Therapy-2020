@@ -14,13 +14,43 @@ import {
   TopNavigation,
   TopNavigationAction,
   Icon,
+  Divider
 } from "@ui-kitten/components";
 import { FirebaseContext } from "./utils/firebase";
+import { View } from 'react-native'
 import { useMediaQuery } from "react-responsive";
+import ApplicationHeader from './ApplicationHeader'
 
 const { Navigator, Screen } = createDrawerNavigator();
 
-const UsersScreen = () => {
+const ChatsScreen = () => {
+  return (
+    <Layout
+      style={{
+        flex: 1,
+        // , justifyContent: "center", alignItems: "center"
+      }}
+    >
+      <ApplicationHeader title="Chat"/>
+      <Text category="h4">Chats Screen</Text>
+    </Layout>
+  )
+}
+
+const AccountScreen = () => {
+  return (
+    <Layout
+      style={{
+        flex: 1,
+        // , justifyContent: "center", alignItems: "center"
+      }}
+    >
+      <ApplicationHeader title="Account"/>
+      <Text category="h4">Accounts Screen</Text>
+    </Layout>
+  )
+}
+const HomeScreen = () => {
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
   const isBig = useMediaQuery({
@@ -46,17 +76,13 @@ const UsersScreen = () => {
         // , justifyContent: "center", alignItems: "center"
       }}
     >
-      <TopNavigation title="Users" accessoryLeft={(!isBig)&&renderBackAction}
-        style={{
-            backgroundColor:"#DDD"
-        }}
-       />
-      <Text category="h1">USERS</Text>
+      <ApplicationHeader title="Home"/>
+      <Text category="h4">Unknown Page</Text>
     </Layout>
   );
 };
 
-const OrdersScreen = () => {
+const LogoutScreen = () => {
   const firebase = React.useContext(FirebaseContext);
   const [loading, setLoading] = React.useState(false);
 
@@ -75,28 +101,57 @@ const OrdersScreen = () => {
       });
   };
   return (
-    <Layout style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text category="h1">ORDERS</Text>
-      <Button onPress={handleLogout}>
+    <Layout style={{ flex: 1}}>
+      <ApplicationHeader title="Logout"/>
+      <Text category="h4">Unknown Route</Text>
+      <Button onPress={handleLogout}
+        style={{
+          width:100
+        }}
+      >
         {loading ? "Logging out ..." : " Log out"}
       </Button>
     </Layout>
   );
 };
 
+const Header = (props) => (
+  <React.Fragment>
+    <View style={{
+      backgroundColor: "FCFCFC",
+      justifyContent: "center",
+      alignContent: "center",
+      height: 100
+    }}>
+      <Text style={{
+        textAlign: "center",
+        fontSize: 18
+      }}>Logo</Text>
+    </View>
+    <Divider />
+
+  </React.Fragment>
+);
+
 const DrawerContent = ({ navigation, state }) => (
   <Drawer
+    header={Header}
     selectedIndex={new IndexPath(state.index)}
     onSelect={(index) => navigation.navigate(state.routeNames[index.row])}
     style={
       {
         // width:200
-           backgroundColor:"#DDD"
+        backgroundColor: "#FCFCFC",
       }
     }
+    indicatorStyle={{
+      backgroundColor:"red"
+    }}
   >
-    <DrawerItem title="Users" />
-    <DrawerItem title="Orders" />
+    <DrawerItem title="Home" />
+    <DrawerItem title="Chats" />
+    <DrawerItem title="Settings" />
+    <DrawerItem title="Logout" />
   </Drawer>
 );
 
@@ -113,10 +168,14 @@ export const DrawerNavigator = () => {
       drawerContent={(props) => <DrawerContent {...props} />}
       drawerStyle={{
         width: 240,
+        borderRightColor: "#B7BAC8",
+        borderRightWidth: 1
       }}
     >
-      <Screen name="Users" component={UsersScreen} />
-      <Screen name="Orders" component={OrdersScreen} />
+      <Screen name="Home" component={HomeScreen} />
+      <Screen name="Chats" component={ChatsScreen} />
+      <Screen name="Account" component={AccountScreen} />
+      <Screen name="Logout" component={LogoutScreen} />
     </Navigator>
   );
 };

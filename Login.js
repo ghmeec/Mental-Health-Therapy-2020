@@ -201,15 +201,23 @@ const TopTabBar = ({ navigation, state }) => (
 
     <TabBar
         selectedIndex={state.index}
+        
         onSelect={index => navigation.navigate(state.routeNames[index])}
         style={{
-            height: 50,
-            borderBottomColor: "#DDD",
-            borderBottomWidth: 1
+            height: 42,
+            borderBottomWidth: 0,
+            "shadowOffset": {
+                "width": 0.0,
+                "height": 0.5
+            },
+            "shadowOpacity": 0.25,
+            "shadowRadius": 1,
         }}
         indicatorStyle={{
-            backgroundColor: "white"
+            backgroundColor: "#3366FF",
+            height:1
         }}
+        
     >
         <Tab title='Login' />
         <Tab title='Register' />
@@ -222,16 +230,20 @@ const TabNavigator = () => (
         maxWidth: 360,
         height: 400,
         "shadowOffset": {
-            "width": 1,
-            "height": 1
+            "width": 0.0,
+            "height": 0.5
         },
         "shadowOpacity": 0.25,
-        "shadowRadius": 5,
+        "shadowRadius": 2,
         marginHorizontal: 16,
 
 
     }}>
-        <Navigator tabBar={props => <TopTabBar {...props} />}>
+        <Navigator tabBar={props => <TopTabBar {...props}
+        
+        />}
+        
+        >
             <Screen name='Users' component={UsersScreen} />
             <Screen name='Orders' component={OrdersScreen} />
         </Navigator>

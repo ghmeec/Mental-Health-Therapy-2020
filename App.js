@@ -180,6 +180,11 @@ const Routes = () => {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <ActivityIndicator size={"large"}></ActivityIndicator>
+        <Text style={{
+          textAlign:"center",
+          fontSize:16,
+          marginTop:12
+        }}>Loading data ...</Text>
       </View>
     );
   }
