@@ -20,9 +20,49 @@ import { FirebaseContext } from "./utils/firebase";
 import { View } from 'react-native'
 import { useMediaQuery } from "react-responsive";
 import ApplicationHeader from './ApplicationHeader'
+import { GiftedChat } from 'react-native-gifted-chat'
 
 const { Navigator, Screen } = createDrawerNavigator();
+class ChatUI extends React.Component {
+  state = {
+    messages: [],
+  }
 
+  componentDidMount() {
+    this.setState({
+      messages: [
+        {
+          _id: 1,
+          text: 'Hello developer',
+          createdAt: new Date(),
+          user: {
+            _id: 2,
+            name: 'React Native',
+            avatar: 'https://placeimg.com/140/140/any',
+          },
+        },
+      ],
+    })
+  }
+
+  onSend(messages = []) {
+    this.setState(previousState => ({
+      messages: GiftedChat.append(previousState.messages, messages),
+    }))
+  }
+
+  render() {
+    return (
+      <GiftedChat
+        messages={this.state.messages}
+        onSend={messages => this.onSend(messages)}
+        user={{
+          _id: 1,
+        }}
+      />
+    )
+  }
+}
 const ChatsScreen = () => {
   return (
     <Layout
@@ -32,7 +72,21 @@ const ChatsScreen = () => {
       }}
     >
       <ApplicationHeader title="Chat" />
-      <Text category="h4">Chats Screen</Text>
+      {/* <ChatUI/> */}
+      <View>
+        <View style={{
+          backgroundColor:'red',
+          height:100
+
+        }}>
+        </View>
+        <View style={{
+          backgroundColor:'blue',
+          height:100
+        }}>
+
+        </View>
+      </View>
     </Layout>
   )
 }
@@ -210,7 +264,7 @@ const DrawerContent = ({ navigation, state }) => (
 
   >
     <DrawerItem title="Home" accessoryLeft={HomeIcon} />
-    <DrawerItem title="Chats" accessoryLeft={ChatIcon} />
+    <DrawerItem title="Counseling" accessoryLeft={ChatIcon} />
     <DrawerItem title="Settings" accessoryLeft={SettingIcon} />
     {/* <DrawerItem title="Logout" /> */}
   </Drawer>
