@@ -208,10 +208,10 @@ const TopTabBar = ({ navigation, state }) => (
             borderBottomWidth: 0,
             "shadowOffset": {
                 "width": 0.0,
-                "height": 0.5
+                "height": 0.25
             },
             "shadowOpacity": 0.25,
-            "shadowRadius": 1,
+            "shadowRadius": 0.5,
         }}
         indicatorStyle={{
             backgroundColor: "#3366FF",
