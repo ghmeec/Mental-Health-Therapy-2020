@@ -45,11 +45,12 @@ const Header = ({ title }) => {
                 >{title?title:""}</Text>}
                 accessoryLeft={(!isBig) && renderBackAction}
                 style={{
-                    backgroundColor: "FCFCFC",
+                    backgroundColor: "#FCFCFC",
+
                 }}
 
             />
-            <Divider />
+            {/* <Divider /> */}
         </>
 
     )

@@ -31,11 +31,27 @@ const ChatsScreen = () => {
         // , justifyContent: "center", alignItems: "center"
       }}
     >
-      <ApplicationHeader title="Chat"/>
+      <ApplicationHeader title="Chat" />
       <Text category="h4">Chats Screen</Text>
     </Layout>
   )
 }
+
+const LogoutIcon = (props) => (
+  <Icon {...props} name='log-out-outline'/>
+);
+
+const ChatIcon = (props) => (
+  <Icon {...props} name='message-square-outline'/>
+);
+const SettingIcon = (props) => (
+  <Icon {...props} name='settings-outline'/>
+);
+
+const HomeIcon = (props) => (
+  <Icon {...props} name='home-outline'/>
+);
+
 
 const AccountScreen = () => {
   return (
@@ -45,7 +61,7 @@ const AccountScreen = () => {
         // , justifyContent: "center", alignItems: "center"
       }}
     >
-      <ApplicationHeader title="Account"/>
+      <ApplicationHeader title="Account" />
       <Text category="h4">Accounts Screen</Text>
     </Layout>
   )
@@ -76,7 +92,7 @@ const HomeScreen = () => {
         // , justifyContent: "center", alignItems: "center"
       }}
     >
-      <ApplicationHeader title="Home"/>
+      <ApplicationHeader title="Home" />
       <Text category="h4">Unknown Page</Text>
     </Layout>
   );
@@ -101,12 +117,12 @@ const LogoutScreen = () => {
       });
   };
   return (
-    <Layout style={{ flex: 1}}>
-      <ApplicationHeader title="Logout"/>
+    <Layout style={{ flex: 1 }}>
+      <ApplicationHeader title="Logout" />
       <Text category="h4">Unknown Route</Text>
       <Button onPress={handleLogout}
         style={{
-          width:100
+          width: 100
         }}
       >
         {loading ? "Logging out ..." : " Log out"}
@@ -133,6 +149,49 @@ const Header = (props) => (
   </React.Fragment>
 );
 
+
+const Footer = (props) => {
+  const firebase = React.useContext(FirebaseContext);
+  const [loading, setLoading] = React.useState(false);
+
+  const handleLogout = () => {
+    setLoading(true);
+    firebase
+      .auth()
+      .signOut()
+      .then((res) => {
+        setLoading(false);
+        console.log("You are successfuly : ", res);
+      })
+      .catch((error) => {
+        setLoading(false);
+        console.log("Error found ");
+      });
+  };
+
+  return (
+    <React.Fragment>
+      <View style={{
+        // justifyContent: "center",
+        // alignContent: "center",
+        // paddingTop:16,
+        // paddingLeft:10,
+        height: 60
+      }}>
+        {/* <Text style={{
+        // textAlign: "center",
+        fontSize: 18
+      }}>Footer</Text> */}
+        <Divider />
+        <DrawerItem title={loading?"Logging out...":"Logout"} onPress={handleLogout}
+        
+        accessoryLeft={LogoutIcon}
+        />
+      </View>
+    </React.Fragment>
+  )
+}
+
 const DrawerContent = ({ navigation, state }) => (
   <Drawer
     header={Header}
@@ -145,13 +204,15 @@ const DrawerContent = ({ navigation, state }) => (
       }
     }
     indicatorStyle={{
-      backgroundColor:"red"
+      backgroundColor: "red"
     }}
+    footer={Footer}
+
   >
-    <DrawerItem title="Home" />
-    <DrawerItem title="Chats" />
-    <DrawerItem title="Settings" />
-    <DrawerItem title="Logout" />
+    <DrawerItem title="Home" accessoryLeft={HomeIcon} />
+    <DrawerItem title="Chats" accessoryLeft={ChatIcon} />
+    <DrawerItem title="Settings" accessoryLeft={SettingIcon} />
+    {/* <DrawerItem title="Logout" /> */}
   </Drawer>
 );
 
@@ -167,15 +228,15 @@ export const DrawerNavigator = () => {
       drawerType={isBig ? "permanent" : "front"}
       drawerContent={(props) => <DrawerContent {...props} />}
       drawerStyle={{
-        width: 240,
-        borderRightColor: "#B7BAC8",
+        width: 210,
+        borderRightColor: "#edf1f7",
         borderRightWidth: 1
       }}
     >
       <Screen name="Home" component={HomeScreen} />
       <Screen name="Chats" component={ChatsScreen} />
       <Screen name="Account" component={AccountScreen} />
-      <Screen name="Logout" component={LogoutScreen} />
+      {/* <Screen name="Logout" component={LogoutScreen} /> */}
     </Navigator>
   );
 };
