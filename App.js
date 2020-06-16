@@ -135,6 +135,7 @@ const Logout = ({ navigation }) => {
 const AuthenticatedHome = () => {
   return (
     <Drawer/>
+
   );
 };
 
@@ -154,6 +155,7 @@ const Routes = () => {
         const hasuraClaim =
           idTokenResult.claims["https://hasura.io/jwt/claims"];
 
+        console.log("The current user : ",user)
         if (hasuraClaim) {
           setAuthState({ status: "in", user, token });
         } else {
@@ -185,6 +187,9 @@ const Routes = () => {
           fontSize:16,
           marginTop:12
         }}>Loading data ...</Text>
+
+
+
       </View>
     );
   }
