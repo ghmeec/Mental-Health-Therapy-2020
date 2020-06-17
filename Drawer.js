@@ -184,7 +184,7 @@ const AccountScreen = () => {
           }}>
             <View style={{
               flexDirection: "row",
-              width:500
+              maxWidth:500
             }}>
               <Text category='h5' style={{ flex: 9 }}>Login Information</Text>
               <View style={{flex:1,paddingLeft:10,alignItems:"center",justifyContent:"center",alignContent:"center"}}><EditIcon /></View>
@@ -195,11 +195,11 @@ const AccountScreen = () => {
               label="Email"
               disabled={editStatus}
               style={{
-                width: 500,
+                maxWidth:500
 
               }} ></Input>
             <Input disabled={editStatus} style={{
-              width: 500,
+              maxWidth:500
             }}
               label="Password"
               placeholder="*********"
@@ -216,7 +216,7 @@ const AccountScreen = () => {
           }}>
             <View style={{
               flexDirection: "row",
-              width:500
+              maxWidth:500
             }}>
               <Text category='h5' style={{ flex: 9 }}>Personal Information</Text>
               <View style={{flex:1,paddingLeft:10,alignItems:"center",justifyContent:"center",alignContent:"center"}}><EditIcon /></View>
@@ -227,11 +227,11 @@ const AccountScreen = () => {
               label="Email"
               disabled={editStatus}
               style={{
-                width: 500,
+                maxWidth:500
 
               }} ></Input>
             <Input disabled={editStatus} style={{
-              width: 500,
+              maxWidth:500
             }}
               label="Password"
               placeholder="*********"
