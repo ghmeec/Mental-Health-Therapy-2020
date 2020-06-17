@@ -39,10 +39,6 @@ const Header = ({ title }) => {
         <>
             <TopNavigation
                 title={evaProps => <Text {...evaProps}
-                style={{
-                    marginLeft:12,
-                    fontSize:16
-                }}
                 >{title?title:""}</Text>}
                 accessoryLeft={(!isBig) && renderBackAction}
                 style={styles.header}

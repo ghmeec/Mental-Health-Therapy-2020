@@ -79,7 +79,8 @@ const Routes = () => {
         <Text style={{
           textAlign:"center",
           fontSize:16,
-          marginTop:12
+          marginTop:12,
+          fontWeight:"bold"
         }}>Loading data ...</Text>
 
 

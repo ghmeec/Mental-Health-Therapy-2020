@@ -414,7 +414,7 @@ export const DrawerNavigator = () => {
       drawerStyle={{
         width: 210,
         borderRightColor: "#FCFCFC",
-        borderRightWidth: 1
+        borderRightWidth: 0
       }}
     >
       <Screen name="Home" component={HomeScreen} />
