@@ -14,7 +14,8 @@ import {
   TopNavigation,
   TopNavigationAction,
   Icon,
-  Divider
+  Divider,
+  Input
 } from "@ui-kitten/components";
 import { FirebaseContext } from "./utils/firebase";
 import { View } from 'react-native'
@@ -22,6 +23,7 @@ import { useMediaQuery } from "react-responsive";
 import ApplicationHeader from './ApplicationHeader'
 import { GiftedChat, Actions, SystemMessage, Send } from 'react-native-gifted-chat'
 import styles from './styles'
+import { TouchableWithoutFeedback } from 'react-native';
 const { Navigator, Screen } = createDrawerNavigator();
 
 
@@ -143,6 +145,27 @@ const HomeIcon = (props) => (
 
 
 const AccountScreen = () => {
+
+  const [value, setValue] = React.useState('');
+  const [editStatus, setEmailEditStatus] = React.useState(true);
+
+  const toggleEmailEdit = () => {
+    setEmailEditStatus(!editStatus)
+  };
+
+  const EditIcon = (props) => (
+    <TouchableWithoutFeedback onPress={toggleEmailEdit}>
+      <Icon {...props} style={{
+        width: 32, height: 32
+      }} name={'edit-outline'} />
+    </TouchableWithoutFeedback>
+  );
+  const renderIcon = (props) => (
+    <TouchableWithoutFeedback onPress={toggleEmailEdit}>
+      <Icon {...props} name={'edit-outline'} />
+    </TouchableWithoutFeedback>
+  );
+
   return (
     <Layout
       style={{
@@ -152,7 +175,73 @@ const AccountScreen = () => {
     >
       <ApplicationHeader title="Account" />
       <View style={styles.mainContainer}>
-        <View style={styles.contentContainer}><Text category="h4" >Accounts Screen</Text></View>
+        <View style={[styles.contentContainer, { backgroundColor: "#E9E9EA" }]}>
+
+          <View style={{
+            backgroundColor: "#FCFCFC",
+            paddingHorizontal: 12,
+            paddingVertical: 16
+          }}>
+            <View style={{
+              flexDirection: "row",
+              width:500
+            }}>
+              <Text category='h5' style={{ flex: 9 }}>Login Information</Text>
+              <View style={{flex:1,paddingLeft:10,alignItems:"center",justifyContent:"center",alignContent:"center"}}><EditIcon /></View>
+
+            </View>
+
+            <Input
+              label="Email"
+              disabled={editStatus}
+              style={{
+                width: 500,
+
+              }} ></Input>
+            <Input disabled={editStatus} style={{
+              width: 500,
+            }}
+              label="Password"
+              placeholder="*********"
+            >
+            </Input>
+
+          </View>
+
+          <View style={{
+            backgroundColor: "#FCFCFC",
+            paddingHorizontal: 12,
+            paddingVertical: 16,
+            marginTop:24
+          }}>
+            <View style={{
+              flexDirection: "row",
+              width:500
+            }}>
+              <Text category='h5' style={{ flex: 9 }}>Personal Information</Text>
+              <View style={{flex:1,paddingLeft:10,alignItems:"center",justifyContent:"center",alignContent:"center"}}><EditIcon /></View>
+
+            </View>
+
+            <Input
+              label="Email"
+              disabled={editStatus}
+              style={{
+                width: 500,
+
+              }} ></Input>
+            <Input disabled={editStatus} style={{
+              width: 500,
+            }}
+              label="Password"
+              placeholder="*********"
+            >
+            </Input>
+
+          </View>
+
+
+        </View>
       </View>
 
     </Layout>
