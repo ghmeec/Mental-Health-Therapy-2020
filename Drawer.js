@@ -14,15 +14,90 @@ import {
   TopNavigation,
   TopNavigationAction,
   Icon,
-  Divider
+  Divider,
+  Input
 } from "@ui-kitten/components";
 import { FirebaseContext } from "./utils/firebase";
 import { View } from 'react-native'
 import { useMediaQuery } from "react-responsive";
 import ApplicationHeader from './ApplicationHeader'
-
+import { GiftedChat, Actions, SystemMessage, Send } from 'react-native-gifted-chat'
+import styles from './styles'
+import { TouchableWithoutFeedback } from 'react-native';
 const { Navigator, Screen } = createDrawerNavigator();
 
+
+class ChatUI extends React.Component {
+  state = {
+    messages: [],
+  }
+
+  componentDidMount() {
+    this.setState({
+      messages: [
+        {
+          _id: 1,
+          text: 'Hello developer',
+          createdAt: new Date(),
+          user: {
+            _id: 2,
+            name: 'React Native',
+            avatar: 'https://placeimg.com/140/140/any',
+          },
+        },
+      ],
+    })
+  }
+  renderSend(props) {
+    return (
+      <Send
+        {...props}
+        containerStyle={{}}
+      >
+        <View style={{
+          marginRight: 10, marginBottom: 5,
+          flexDirection: "row",
+          justifyContent: 'center',
+          alignItems: 'center',
+          alignSelf: 'center',
+          marginRight: 15,
+        }}>
+          <Text style={{ fontSize: 14 }} status='primary' category='label'>Send</Text>
+          <Icon
+            style={styles.icon}
+            fill="#3366FF"
+            name='paper-plane-outline'
+          />
+
+        </View>
+      </Send>
+    );
+  }
+
+  onSend(messages = []) {
+    this.setState(previousState => ({
+      messages: GiftedChat.append(previousState.messages, messages),
+    }))
+  }
+
+  render() {
+    return (
+      <View style={{
+        flex: 1,
+        backgroundColor: "#FFFFFF"
+      }}>
+        <GiftedChat
+          messages={this.state.messages}
+          onSend={messages => this.onSend(messages)}
+          user={{
+            _id: 1,
+          }}
+          renderSend={this.renderSend}
+        />
+      </View>
+    )
+  }
+}
 const ChatsScreen = () => {
   return (
     <Layout
@@ -31,29 +106,66 @@ const ChatsScreen = () => {
         // , justifyContent: "center", alignItems: "center"
       }}
     >
-      <ApplicationHeader title="Chat" />
-      <Text category="h4">Chats Screen</Text>
+      <ApplicationHeader title="Counseling" />
+      <View style={styles.mainContainer}>
+        <View style={styles.chatContainer}>
+          <View style={{
+            flex: 2,
+            paddingHorizontal: 12
+          }}>
+            <ChatUI />
+          </View>
+          <View style={{
+            flex: 1,
+            backgroundColor: 'white',
+            paddingHorizontal: 12
+          }}>
+
+          </View>
+        </View>
+      </View>
     </Layout>
   )
 }
 
 const LogoutIcon = (props) => (
-  <Icon {...props} name='log-out-outline'/>
+  <Icon {...props} name='log-out-outline' />
 );
 
 const ChatIcon = (props) => (
-  <Icon {...props} name='message-square-outline'/>
+  <Icon {...props} name='message-square-outline' />
 );
 const SettingIcon = (props) => (
-  <Icon {...props} name='settings-outline'/>
+  <Icon {...props} name='settings-outline' />
 );
 
 const HomeIcon = (props) => (
-  <Icon {...props} name='home-outline'/>
+  <Icon {...props} name='home-outline' />
 );
 
 
 const AccountScreen = () => {
+
+  const [value, setValue] = React.useState('');
+  const [editStatus, setEmailEditStatus] = React.useState(true);
+
+  const toggleEmailEdit = () => {
+    setEmailEditStatus(!editStatus)
+  };
+
+  const EditIcon = (props) => (
+    <TouchableWithoutFeedback onPress={toggleEmailEdit}>
+      <Icon {...props} style={{
+        width: 32, height: 32
+      }} name={'edit-outline'} />
+    </TouchableWithoutFeedback>
+  );
+  const renderIcon = (props) => (
+    <TouchableWithoutFeedback onPress={toggleEmailEdit}>
+      <Icon {...props} name={'edit-outline'} />
+    </TouchableWithoutFeedback>
+  );
+
   return (
     <Layout
       style={{
@@ -62,7 +174,76 @@ const AccountScreen = () => {
       }}
     >
       <ApplicationHeader title="Account" />
-      <Text category="h4">Accounts Screen</Text>
+      <View style={styles.mainContainer}>
+        <View style={[styles.contentContainer, { backgroundColor: "#E9E9EA" }]}>
+
+          <View style={{
+            backgroundColor: "#FCFCFC",
+            paddingHorizontal: 12,
+            paddingVertical: 16
+          }}>
+            <View style={{
+              flexDirection: "row",
+              width:500
+            }}>
+              <Text category='h5' style={{ flex: 9 }}>Login Information</Text>
+              <View style={{flex:1,paddingLeft:10,alignItems:"center",justifyContent:"center",alignContent:"center"}}><EditIcon /></View>
+
+            </View>
+
+            <Input
+              label="Email"
+              disabled={editStatus}
+              style={{
+                width: 500,
+
+              }} ></Input>
+            <Input disabled={editStatus} style={{
+              width: 500,
+            }}
+              label="Password"
+              placeholder="*********"
+            >
+            </Input>
+
+          </View>
+
+          <View style={{
+            backgroundColor: "#FCFCFC",
+            paddingHorizontal: 12,
+            paddingVertical: 16,
+            marginTop:24
+          }}>
+            <View style={{
+              flexDirection: "row",
+              width:500
+            }}>
+              <Text category='h5' style={{ flex: 9 }}>Personal Information</Text>
+              <View style={{flex:1,paddingLeft:10,alignItems:"center",justifyContent:"center",alignContent:"center"}}><EditIcon /></View>
+
+            </View>
+
+            <Input
+              label="Email"
+              disabled={editStatus}
+              style={{
+                width: 500,
+
+              }} ></Input>
+            <Input disabled={editStatus} style={{
+              width: 500,
+            }}
+              label="Password"
+              placeholder="*********"
+            >
+            </Input>
+
+          </View>
+
+
+        </View>
+      </View>
+
     </Layout>
   )
 }
@@ -93,7 +274,9 @@ const HomeScreen = () => {
       }}
     >
       <ApplicationHeader title="Home" />
-      <Text category="h4">Unknown Page</Text>
+      <View style={styles.mainContainer}>
+        <View style={styles.contentContainer}><Text>Content</Text></View>
+      </View>
     </Layout>
   );
 };
@@ -183,9 +366,10 @@ const Footer = (props) => {
         fontSize: 18
       }}>Footer</Text> */}
         <Divider />
-        <DrawerItem title={loading?"Logging out...":"Logout"} onPress={handleLogout}
-        
-        accessoryLeft={LogoutIcon}
+        <DrawerItem title={loading ? "Logging out..." : "Logout"} onPress={handleLogout}
+
+          accessoryLeft={LogoutIcon}
+          style={styles.drawerItem}
         />
       </View>
     </React.Fragment>
@@ -209,9 +393,9 @@ const DrawerContent = ({ navigation, state }) => (
     footer={Footer}
 
   >
-    <DrawerItem title="Home" accessoryLeft={HomeIcon} />
-    <DrawerItem title="Chats" accessoryLeft={ChatIcon} />
-    <DrawerItem title="Settings" accessoryLeft={SettingIcon} />
+    <DrawerItem title="Home" accessoryLeft={HomeIcon} style={styles.drawerItem} />
+    <DrawerItem title="Counseling" accessoryLeft={ChatIcon} style={styles.drawerItem} />
+    <DrawerItem title="Account" accessoryLeft={SettingIcon} style={styles.drawerItem} />
     {/* <DrawerItem title="Logout" /> */}
   </Drawer>
 );
@@ -229,7 +413,7 @@ export const DrawerNavigator = () => {
       drawerContent={(props) => <DrawerContent {...props} />}
       drawerStyle={{
         width: 210,
-        borderRightColor: "#edf1f7",
+        borderRightColor: "#FCFCFC",
         borderRightWidth: 1
       }}
     >

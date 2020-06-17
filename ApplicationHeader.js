@@ -11,6 +11,7 @@ import { useNavigation } from "@react-navigation/native";
 import {
     useIsDrawerOpen,
 } from "@react-navigation/drawer";
+import styles from './styles'
 
 
 const Header = ({ title }) => {
@@ -44,10 +45,7 @@ const Header = ({ title }) => {
                 }}
                 >{title?title:""}</Text>}
                 accessoryLeft={(!isBig) && renderBackAction}
-                style={{
-                    backgroundColor: "#FCFCFC",
-
-                }}
+                style={styles.header}
 
             />
             {/* <Divider /> */}
