@@ -53,14 +53,14 @@ class ChatUI extends React.Component {
         containerStyle={{}}
       >
         <View style={{
-          marginRight: 10, marginBottom: 5, 
+          marginRight: 10, marginBottom: 5,
           flexDirection: "row",
           justifyContent: 'center',
           alignItems: 'center',
           alignSelf: 'center',
           marginRight: 15,
         }}>
-          <Text style={{fontSize:14}} status='primary' category='label'>Send</Text>
+          <Text style={{ fontSize: 14 }} status='primary' category='label'>Send</Text>
           <Icon
             style={styles.icon}
             fill="#3366FF"
@@ -152,7 +152,7 @@ const AccountScreen = () => {
     >
       <ApplicationHeader title="Account" />
       <View style={styles.mainContainer}>
-        <Text category="h4">Accounts Screen</Text>
+        <View style={styles.contentContainer}><Text category="h4" >Accounts Screen</Text></View>
       </View>
 
     </Layout>
@@ -186,7 +186,7 @@ const HomeScreen = () => {
     >
       <ApplicationHeader title="Home" />
       <View style={styles.mainContainer}>
-        <Text>Content</Text>
+        <View style={styles.contentContainer}><Text>Content</Text></View>
       </View>
     </Layout>
   );
@@ -306,7 +306,7 @@ const DrawerContent = ({ navigation, state }) => (
   >
     <DrawerItem title="Home" accessoryLeft={HomeIcon} style={styles.drawerItem} />
     <DrawerItem title="Counseling" accessoryLeft={ChatIcon} style={styles.drawerItem} />
-    <DrawerItem title="Settings" accessoryLeft={SettingIcon} style={styles.drawerItem} />
+    <DrawerItem title="Account" accessoryLeft={SettingIcon} style={styles.drawerItem} />
     {/* <DrawerItem title="Logout" /> */}
   </Drawer>
 );

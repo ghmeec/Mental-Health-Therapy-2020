@@ -21,6 +21,13 @@ const styles=StyleSheet.create({
     icon:{
         height:32,
         width:32
+    },
+    contentContainer:{
+        flex:1,
+        backgroundColor:'#FCFCFC',
+        paddingHorizontal:12,
+        paddingVertical:8
+
     }
 })
 
