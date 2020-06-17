@@ -20,9 +20,11 @@ import { FirebaseContext } from "./utils/firebase";
 import { View } from 'react-native'
 import { useMediaQuery } from "react-responsive";
 import ApplicationHeader from './ApplicationHeader'
-import { GiftedChat } from 'react-native-gifted-chat'
-
+import { GiftedChat, Actions, SystemMessage, Send } from 'react-native-gifted-chat'
+import styles from './styles'
 const { Navigator, Screen } = createDrawerNavigator();
+
+
 class ChatUI extends React.Component {
   state = {
     messages: [],
@@ -44,6 +46,31 @@ class ChatUI extends React.Component {
       ],
     })
   }
+  renderSend(props) {
+    return (
+      <Send
+        {...props}
+        containerStyle={{}}
+      >
+        <View style={{
+          marginRight: 10, marginBottom: 5, 
+          flexDirection: "row",
+          justifyContent: 'center',
+          alignItems: 'center',
+          alignSelf: 'center',
+          marginRight: 15,
+        }}>
+          <Text style={{fontSize:14}} status='primary' category='label'>Send</Text>
+          <Icon
+            style={styles.icon}
+            fill="#3366FF"
+            name='paper-plane-outline'
+          />
+
+        </View>
+      </Send>
+    );
+  }
 
   onSend(messages = []) {
     this.setState(previousState => ({
@@ -53,13 +80,19 @@ class ChatUI extends React.Component {
 
   render() {
     return (
-      <GiftedChat
-        messages={this.state.messages}
-        onSend={messages => this.onSend(messages)}
-        user={{
-          _id: 1,
-        }}
-      />
+      <View style={{
+        flex: 1,
+        backgroundColor: "#FFFFFF"
+      }}>
+        <GiftedChat
+          messages={this.state.messages}
+          onSend={messages => this.onSend(messages)}
+          user={{
+            _id: 1,
+          }}
+          renderSend={this.renderSend}
+        />
+      </View>
     )
   }
 }
@@ -71,20 +104,22 @@ const ChatsScreen = () => {
         // , justifyContent: "center", alignItems: "center"
       }}
     >
-      <ApplicationHeader title="Chat" />
-      {/* <ChatUI/> */}
-      <View>
-        <View style={{
-          backgroundColor:'red',
-          height:100
+      <ApplicationHeader title="Counseling" />
+      <View style={styles.mainContainer}>
+        <View style={styles.chatContainer}>
+          <View style={{
+            flex: 2,
+            paddingHorizontal: 12
+          }}>
+            <ChatUI />
+          </View>
+          <View style={{
+            flex: 1,
+            backgroundColor: 'white',
+            paddingHorizontal: 12
+          }}>
 
-        }}>
-        </View>
-        <View style={{
-          backgroundColor:'blue',
-          height:100
-        }}>
-
+          </View>
         </View>
       </View>
     </Layout>
@@ -92,18 +127,18 @@ const ChatsScreen = () => {
 }
 
 const LogoutIcon = (props) => (
-  <Icon {...props} name='log-out-outline'/>
+  <Icon {...props} name='log-out-outline' />
 );
 
 const ChatIcon = (props) => (
-  <Icon {...props} name='message-square-outline'/>
+  <Icon {...props} name='message-square-outline' />
 );
 const SettingIcon = (props) => (
-  <Icon {...props} name='settings-outline'/>
+  <Icon {...props} name='settings-outline' />
 );
 
 const HomeIcon = (props) => (
-  <Icon {...props} name='home-outline'/>
+  <Icon {...props} name='home-outline' />
 );
 
 
@@ -116,7 +151,10 @@ const AccountScreen = () => {
       }}
     >
       <ApplicationHeader title="Account" />
-      <Text category="h4">Accounts Screen</Text>
+      <View style={styles.mainContainer}>
+        <Text category="h4">Accounts Screen</Text>
+      </View>
+
     </Layout>
   )
 }
@@ -147,7 +185,9 @@ const HomeScreen = () => {
       }}
     >
       <ApplicationHeader title="Home" />
-      <Text category="h4">Unknown Page</Text>
+      <View style={styles.mainContainer}>
+        <Text>Content</Text>
+      </View>
     </Layout>
   );
 };
@@ -237,9 +277,10 @@ const Footer = (props) => {
         fontSize: 18
       }}>Footer</Text> */}
         <Divider />
-        <DrawerItem title={loading?"Logging out...":"Logout"} onPress={handleLogout}
-        
-        accessoryLeft={LogoutIcon}
+        <DrawerItem title={loading ? "Logging out..." : "Logout"} onPress={handleLogout}
+
+          accessoryLeft={LogoutIcon}
+          style={styles.drawerItem}
         />
       </View>
     </React.Fragment>
@@ -263,9 +304,9 @@ const DrawerContent = ({ navigation, state }) => (
     footer={Footer}
 
   >
-    <DrawerItem title="Home" accessoryLeft={HomeIcon} />
-    <DrawerItem title="Counseling" accessoryLeft={ChatIcon} />
-    <DrawerItem title="Settings" accessoryLeft={SettingIcon} />
+    <DrawerItem title="Home" accessoryLeft={HomeIcon} style={styles.drawerItem} />
+    <DrawerItem title="Counseling" accessoryLeft={ChatIcon} style={styles.drawerItem} />
+    <DrawerItem title="Settings" accessoryLeft={SettingIcon} style={styles.drawerItem} />
     {/* <DrawerItem title="Logout" /> */}
   </Drawer>
 );
@@ -283,7 +324,7 @@ export const DrawerNavigator = () => {
       drawerContent={(props) => <DrawerContent {...props} />}
       drawerStyle={{
         width: 210,
-        borderRightColor: "#edf1f7",
+        borderRightColor: "#FCFCFC",
         borderRightWidth: 1
       }}
     >

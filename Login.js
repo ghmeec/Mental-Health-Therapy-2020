@@ -185,7 +185,9 @@ const OrdersScreen = () => {
         </TouchableWithoutFeedback>
     );
     return (
-        <Layout style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Layout style={{ flex: 1, justifyContent: 'center', alignItems: 'center',
+        backgroundColor:"#FFFFFF",
+        }}>
             <Text style={{ marginVertical: 10, color: "red",width:260 }}>{errorMessage}</Text>
             <Input
                 label='Full Name'
@@ -251,12 +253,6 @@ const TopTabBar = ({ navigation, state }) => (
         style={{
             height: 42,
             borderBottomWidth: 0,
-            "shadowOffset": {
-                "width": 0.0,
-                "height": 0.25
-            },
-            "shadowOpacity": 0.25,
-            "shadowRadius": 0.5,
         }}
         indicatorStyle={{
             backgroundColor: "#3366FF",
@@ -274,12 +270,12 @@ const TabNavigator = () => (
     <View style={{
         maxWidth: 360,
         height: 400,
-        "shadowOffset": {
-            "width": 0.0,
-            "height": 0.5
-        },
-        "shadowOpacity": 0.25,
-        "shadowRadius": 2,
+        // "shadowOffset": {
+        //     "width": 0.0,
+        //     "height": 0.5
+        // },
+        // "shadowOpacity": 0.25,
+        // "shadowRadius": 2,
         marginHorizontal: 16,
 
 
@@ -300,6 +296,7 @@ export const Login = ({ }) => (
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
+        backgroundColor:"#E9E9EA",
     }}>
         <TabNavigator />
     </View>
