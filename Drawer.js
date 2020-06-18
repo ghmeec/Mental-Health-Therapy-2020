@@ -15,87 +15,135 @@ import {
   TopNavigationAction,
   Icon,
   Divider,
-  Input
+  Input,
+  Select,
+  SelectItem,
+  Calendar,
+  Datepicker
 } from "@ui-kitten/components";
 import { FirebaseContext } from "./utils/firebase";
-import { View } from 'react-native'
+import { View } from "react-native";
 import { useMediaQuery } from "react-responsive";
-import ApplicationHeader from './ApplicationHeader'
-import { GiftedChat, Actions, SystemMessage, Send } from 'react-native-gifted-chat'
-import styles from './styles'
-import { TouchableWithoutFeedback } from 'react-native';
+import ApplicationHeader from "./ApplicationHeader";
+import {
+  GiftedChat,
+  Actions,
+  SystemMessage,
+  Send,
+} from "react-native-gifted-chat";
+import styles from "./styles";
+import { StyleSheet } from "react-native";
+import { TouchableWithoutFeedback } from "react-native";
 const { Navigator, Screen } = createDrawerNavigator();
 
+const BirthDate = () => {
+
+  const [date, setDate] = React.useState(new Date());
+
+  return (
+    <Layout style={styles.container} level='1'>
+
+      <Datepicker
+        label='BirthDate'
+        placeholder='Pick Date'
+        date={date}
+        onSelect={nextDate => setDate(nextDate)}
+        
+      />
+
+    </Layout>
+  );
+};
+
+
+const GenderMenu = () => {
+  const [selectedIndex, setSelectedIndex] = React.useState();
+  const [data,setData]=React.useState(['','Male','Female']);
+
+  return (
+    <Layout style={styles.gendercontainer} level="1">
+      <Select
+      style={styles.gendercontainer}
+        label="Gender"
+        selectedIndex={selectedIndex}
+        onSelect={(index) => setSelectedIndex(index)}
+        value={data[selectedIndex]}
+      >
+        <SelectItem title="Male"/>
+        <SelectItem title="Female"/>
+      </Select>
+    </Layout>
+  );
+};
 
 class ChatUI extends React.Component {
   state = {
     messages: [],
-  }
+  };
 
   componentDidMount() {
     this.setState({
       messages: [
         {
           _id: 1,
-          text: 'Hello developer',
+          text: "Hello developer",
           createdAt: new Date(),
           user: {
             _id: 2,
-            name: 'React Native',
-            avatar: 'https://placeimg.com/140/140/any',
+            name: "React Native",
+            avatar: "https://placeimg.com/140/140/any",
           },
         },
       ],
-    })
+    });
   }
   renderSend(props) {
     return (
-      <Send
-        {...props}
-        containerStyle={{}}
-      >
-        <View style={{
-          marginRight: 10, marginBottom: 5,
-          flexDirection: "row",
-          justifyContent: 'center',
-          alignItems: 'center',
-          alignSelf: 'center',
-          marginRight: 15,
-        }}>
-          <Text style={{ fontSize: 14 }} status='primary' category='label'>Send</Text>
-          <Icon
-            style={styles.icon}
-            fill="#3366FF"
-            name='paper-plane-outline'
-          />
-
+      <Send {...props} containerStyle={{}}>
+        <View
+          style={{
+            marginRight: 10,
+            marginBottom: 5,
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            alignSelf: "center",
+            marginRight: 15,
+          }}
+        >
+          <Text style={{ fontSize: 14 }} status="primary" category="label">
+            Send
+          </Text>
+          <Icon style={styles.icon} fill="#3366FF" name="paper-plane-outline" />
         </View>
       </Send>
     );
   }
 
   onSend(messages = []) {
-    this.setState(previousState => ({
+    this.setState((previousState) => ({
       messages: GiftedChat.append(previousState.messages, messages),
-    }))
+    }));
   }
 
   render() {
     return (
-      <View style={{
-        flex: 1,
-        backgroundColor: "#FFFFFF"
-      }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#FFFFFF",
+        }}
+      >
         <GiftedChat
           messages={this.state.messages}
-          onSend={messages => this.onSend(messages)}
+          onSend={(messages) => this.onSend(messages)}
           user={{
             _id: 1,
           }}
           renderSend={this.renderSend}
         />
       </View>
-    )
+    );
   }
 }
 const ChatsScreen = () => {
@@ -109,60 +157,57 @@ const ChatsScreen = () => {
       <ApplicationHeader title="Counseling" />
       <View style={styles.mainContainer}>
         <View style={styles.chatContainer}>
-          <View style={{
-            flex: 2,
-            paddingHorizontal: 12
-          }}>
+          <View
+            style={{
+              flex: 2,
+              paddingHorizontal: 12,
+            }}
+          >
             <ChatUI />
           </View>
-          <View style={{
-            flex: 1,
-            backgroundColor: 'white',
-            paddingHorizontal: 12
-          }}>
-
-          </View>
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "white",
+              paddingHorizontal: 12,
+            }}
+          ></View>
         </View>
       </View>
     </Layout>
-  )
-}
+  );
+};
 
-const LogoutIcon = (props) => (
-  <Icon {...props} name='log-out-outline' />
-);
+const LogoutIcon = (props) => <Icon {...props} name="log-out-outline" />;
 
-const ChatIcon = (props) => (
-  <Icon {...props} name='message-square-outline' />
-);
-const SettingIcon = (props) => (
-  <Icon {...props} name='settings-outline' />
-);
+const ChatIcon = (props) => <Icon {...props} name="message-square-outline" />;
+const SettingIcon = (props) => <Icon {...props} name="settings-outline" />;
 
-const HomeIcon = (props) => (
-  <Icon {...props} name='home-outline' />
-);
-
+const HomeIcon = (props) => <Icon {...props} name="home-outline" />;
 
 const AccountScreen = () => {
-
-  const [value, setValue] = React.useState('');
+  const [value, setValue] = React.useState("");
   const [editStatus, setEmailEditStatus] = React.useState(true);
 
   const toggleEmailEdit = () => {
-    setEmailEditStatus(!editStatus)
+    setEmailEditStatus(!editStatus);
   };
 
   const EditIcon = (props) => (
     <TouchableWithoutFeedback onPress={toggleEmailEdit}>
-      <Icon {...props} style={{
-        width: 32, height: 32
-      }} name={'edit-outline'} />
+      <Icon
+        {...props}
+        style={{
+          width: 32,
+          height: 32,
+        }}
+        name={"edit-outline"}
+      />
     </TouchableWithoutFeedback>
   );
   const renderIcon = (props) => (
     <TouchableWithoutFeedback onPress={toggleEmailEdit}>
-      <Icon {...props} name={'edit-outline'} />
+      <Icon {...props} name={"edit-outline"} />
     </TouchableWithoutFeedback>
   );
 
@@ -176,77 +221,98 @@ const AccountScreen = () => {
       <ApplicationHeader title="Account" />
       <View style={styles.mainContainer}>
         <View style={[styles.contentContainer, { backgroundColor: "#E9E9EA" }]}>
-
-          <View style={{
-            backgroundColor: "#FCFCFC",
-            paddingHorizontal: 12,
-            paddingVertical: 16
-          }}>
-            <View style={{
-              flexDirection: "row",
-              maxWidth:500
-            }}>
-              <Text category='h5' style={{ flex: 9 }}>Login Information</Text>
-              <View style={{flex:1,paddingLeft:10,alignItems:"center",justifyContent:"center",alignContent:"center"}}><EditIcon /></View>
-
+          <View
+            style={{
+              backgroundColor: "#FCFCFC",
+              paddingHorizontal: 12,
+              paddingVertical: 16,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                maxWidth: 500,
+              }}
+            >
+              <Text category="h5" style={{ flex: 9 }}>
+                Login Information
+              </Text>
+              <View
+                style={{
+                  flex: 1,
+                  paddingLeft: 10,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  alignContent: "center",
+                }}
+              >
+                <EditIcon />
+              </View>
             </View>
 
             <Input
               label="Email"
               disabled={editStatus}
               style={{
-                maxWidth:500
-
-              }} ></Input>
-            <Input disabled={editStatus} style={{
-              maxWidth:500
-            }}
+                maxWidth: 500,
+              }}
+            ></Input>
+            <Input
+              disabled={editStatus}
+              style={{
+                maxWidth: 500,
+              }}
               label="Password"
               placeholder="*********"
-            >
-            </Input>
-
+            ></Input>
           </View>
 
-          <View style={{
-            backgroundColor: "#FCFCFC",
-            paddingHorizontal: 12,
-            paddingVertical: 16,
-            marginTop:24
-          }}>
-            <View style={{
-              flexDirection: "row",
-              maxWidth:500
-            }}>
-              <Text category='h5' style={{ flex: 9 }}>Personal Information</Text>
-              <View style={{flex:1,paddingLeft:10,alignItems:"center",justifyContent:"center",alignContent:"center"}}><EditIcon /></View>
-
+          <View
+            style={{
+              backgroundColor: "#FCFCFC",
+              paddingHorizontal: 12,
+              paddingVertical: 16,
+              marginTop: 24,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                maxWidth: 500,
+              }}
+            >
+              <Text category="h5" style={{ flex: 9 }}>
+                Personal Information
+              </Text>
+              <View
+                style={{
+                  flex: 1,
+                  paddingLeft: 10,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  alignContent: "center",
+                }}
+              >
+                <EditIcon />
+              </View>
             </View>
 
             <Input
-              label="Email"
+              label="Full Names"
               disabled={editStatus}
               style={{
-                maxWidth:500
-
-              }} ></Input>
-            <Input disabled={editStatus} style={{
-              maxWidth:500
-            }}
-              label="Password"
-              placeholder="*********"
-            >
-            </Input>
-
+                maxWidth: 500,
+              }}
+            ></Input>
+            <GenderMenu />
+           
+            <BirthDate/>
           </View>
-
-
         </View>
       </View>
-
     </Layout>
-  )
-}
+  );
+};
 const HomeScreen = () => {
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
@@ -275,7 +341,9 @@ const HomeScreen = () => {
     >
       <ApplicationHeader title="Home" />
       <View style={styles.mainContainer}>
-        <View style={styles.contentContainer}><Text>Content</Text></View>
+        <View style={styles.contentContainer}>
+          <Text>Content</Text>
+        </View>
       </View>
     </Layout>
   );
@@ -303,9 +371,10 @@ const LogoutScreen = () => {
     <Layout style={{ flex: 1 }}>
       <ApplicationHeader title="Logout" />
       <Text category="h4">Unknown Route</Text>
-      <Button onPress={handleLogout}
+      <Button
+        onPress={handleLogout}
         style={{
-          width: 100
+          width: 100,
         }}
       >
         {loading ? "Logging out ..." : " Log out"}
@@ -316,22 +385,26 @@ const LogoutScreen = () => {
 
 const Header = (props) => (
   <React.Fragment>
-    <View style={{
-      backgroundColor: "FCFCFC",
-      justifyContent: "center",
-      alignContent: "center",
-      height: 100
-    }}>
-      <Text style={{
-        textAlign: "center",
-        fontSize: 18
-      }}>Logo</Text>
+    <View
+      style={{
+        backgroundColor: "FCFCFC",
+        justifyContent: "center",
+        alignContent: "center",
+        height: 100,
+      }}
+    >
+      <Text
+        style={{
+          textAlign: "center",
+          fontSize: 18,
+        }}
+      >
+        Logo
+      </Text>
     </View>
     <Divider />
-
   </React.Fragment>
 );
-
 
 const Footer = (props) => {
   const firebase = React.useContext(FirebaseContext);
@@ -354,48 +427,60 @@ const Footer = (props) => {
 
   return (
     <React.Fragment>
-      <View style={{
-        // justifyContent: "center",
-        // alignContent: "center",
-        // paddingTop:16,
-        // paddingLeft:10,
-        height: 60
-      }}>
+      <View
+        style={{
+          // justifyContent: "center",
+          // alignContent: "center",
+          // paddingTop:16,
+          // paddingLeft:10,
+          height: 60,
+        }}
+      >
         {/* <Text style={{
         // textAlign: "center",
         fontSize: 18
       }}>Footer</Text> */}
         <Divider />
-        <DrawerItem title={loading ? "Logging out..." : "Logout"} onPress={handleLogout}
-
+        <DrawerItem
+          title={loading ? "Logging out..." : "Logout"}
+          onPress={handleLogout}
           accessoryLeft={LogoutIcon}
           style={styles.drawerItem}
         />
       </View>
     </React.Fragment>
-  )
-}
+  );
+};
 
 const DrawerContent = ({ navigation, state }) => (
   <Drawer
     header={Header}
     selectedIndex={new IndexPath(state.index)}
     onSelect={(index) => navigation.navigate(state.routeNames[index.row])}
-    style={
-      {
-        // width:200
-        backgroundColor: "#FCFCFC",
-      }
-    }
+    style={{
+      // width:200
+      backgroundColor: "#FCFCFC",
+    }}
     indicatorStyle={{
-      backgroundColor: "red"
+      backgroundColor: "red",
     }}
     footer={Footer}
-
   >
-    <DrawerItem title="Home" accessoryLeft={HomeIcon} style={styles.drawerItem} />
-    <DrawerItem title="Counseling" accessoryLeft={ChatIcon} style={styles.drawerItem} />
-    <DrawerItem title="Account" accessoryLeft={SettingIcon} style={styles.drawerItem} />
+    <DrawerItem
+      title="Home"
+      accessoryLeft={HomeIcon}
+      style={styles.drawerItem}
+    />
+    <DrawerItem
+      title="Counseling"
+      accessoryLeft={ChatIcon}
+      style={styles.drawerItem}
+    />
+    <DrawerItem
+      title="Account"
+      accessoryLeft={SettingIcon}
+      style={styles.drawerItem}
+    />
     {/* <DrawerItem title="Logout" /> */}
   </Drawer>
 );
@@ -414,7 +499,7 @@ export const DrawerNavigator = () => {
       drawerStyle={{
         width: 210,
         borderRightColor: "#FCFCFC",
-        borderRightWidth: 0
+        borderRightWidth: 0,
       }}
     >
       <Screen name="Home" component={HomeScreen} />
