@@ -11,6 +11,8 @@
     "predeploy": "expo build:web"
   },
   "dependencies": {
+    "@apollo/client": "^3.0.0-rc.6",
+    "@apollo/react-hooks": "^3.1.5",
     "@eva-design/eva": "^2.0.0",
     "@expo/match-media": "0.0.0-alpha.5",
     "@expo/webpack-config": "^0.12.12",
@@ -21,8 +23,15 @@
     "@react-navigation/stack": "^5.4.1",
     "@ui-kitten/components": "^5.0.0",
     "@ui-kitten/eva-icons": "^5.0.0",
+    "apollo-boost": "^0.4.9",
+    "apollo-cache-inmemory": "^1.6.6",
+    "apollo-client": "^2.6.10",
+    "apollo-link-http": "^1.5.17",
     "expo": "~37.0.3",
+    "expo-cli": "3.21.5",
     "firebase": "^7.9.0",
+    "graphql": "^15.1.0",
+    "graphql-tag": "^2.10.3",
     "react": "~16.9.0",
     "react-dom": "~16.9.0",
     "react-firebase-hooks": "2.1.1",
@@ -35,8 +44,7 @@
     "react-native-svg": "11.0.1",
     "react-native-tab-view": "^2.14.4",
     "react-native-web": "~0.11.7",
-    "react-responsive": "^8.1.0",
-    "expo-cli":"3.21.5"
+    "react-responsive": "^8.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.8.6",

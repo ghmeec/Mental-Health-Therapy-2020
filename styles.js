@@ -30,11 +30,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
-  gendercontainer: {
+  inputContainer: {
     flex: 1,
     backgroundColor: "#FCFCF",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    // paddingHorizontal: 12,
+    marginVertical: 8,
+    width:500
   
   },
 });

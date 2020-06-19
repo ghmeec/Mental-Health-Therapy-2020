@@ -20,15 +20,33 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import "firebase/auth";
 import "firebase/database"
 import { Login } from "./Login";
+
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloProvider,
+  gql,
+  useQuery,
+  useMutation
+} from "@apollo/client";
 import Drawer from './Drawer';
 
 
 
 
+const cache = new InMemoryCache();
+const client = new ApolloClient({
+  uri: "https://ghm-hasura.herokuapp.com/v1/graphql",
+  headers: {
+    "x-hasura-admin-secret": "@ghmeec2020",
+    "content-type": "application/json"
+  },
+  cache
+});
 
 const AuthenticatedHome = () => {
   return (
-    <Drawer/>
+    <Drawer />
 
   );
 };
@@ -49,7 +67,7 @@ const Routes = () => {
         const hasuraClaim =
           idTokenResult.claims["https://hasura.io/jwt/claims"];
 
-        console.log("The current user : ",user)
+        console.log("The current user : ", user)
         if (hasuraClaim) {
           setAuthState({ status: "in", user, token });
         } else {
@@ -77,10 +95,10 @@ const Routes = () => {
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <ActivityIndicator size={"large"}></ActivityIndicator>
         <Text style={{
-          textAlign:"center",
-          fontSize:16,
-          marginTop:12,
-          fontWeight:"bold"
+          textAlign: "center",
+          fontSize: 16,
+          marginTop: 12,
+          fontWeight: "bold"
         }}>Loading data ...</Text>
 
 
@@ -106,14 +124,16 @@ export default function App() {
 
 
   return (
-    <FirebaseProvider>
-      <IconRegistry icons={EvaIconsPack} />
-      <ApplicationProvider {...eva} theme={{ ...eva.light }}>
-        <NavigationContainer>
-        <Routes/>
-        </NavigationContainer>
-      </ApplicationProvider>
-    </FirebaseProvider>
+    <ApolloProvider client={client}>
+      <FirebaseProvider>
+        <IconRegistry icons={EvaIconsPack} />
+        <ApplicationProvider {...eva} theme={{ ...eva.light }}>
+          <NavigationContainer>
+            <Routes />
+          </NavigationContainer>
+        </ApplicationProvider>
+      </FirebaseProvider>
+    </ApolloProvider>
 
   );
 }

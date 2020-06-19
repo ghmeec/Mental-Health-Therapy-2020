@@ -22,7 +22,7 @@ import {
   Datepicker
 } from "@ui-kitten/components";
 import { FirebaseContext } from "./utils/firebase";
-import { View } from "react-native";
+import { View, ScrollView } from "react-native";
 import { useMediaQuery } from "react-responsive";
 import ApplicationHeader from "./ApplicationHeader";
 import {
@@ -34,6 +34,14 @@ import {
 import styles from "./styles";
 import { StyleSheet } from "react-native";
 import { TouchableWithoutFeedback } from "react-native";
+import LoginInformationEdit from './src/components/LoginInformationEdit'
+import PersonalInformationEdit from './src/components/PersonalInformationEdit'
+import CounselorTitle from './src/components/CounselorTitle'
+import {
+  gql,
+  useQuery,
+  useMutation
+} from "@apollo/client";
 const { Navigator, Screen } = createDrawerNavigator();
 
 const BirthDate = () => {
@@ -46,9 +54,10 @@ const BirthDate = () => {
       <Datepicker
         label='BirthDate'
         placeholder='Pick Date'
+        style={styles.inputContainer}
         date={date}
         onSelect={nextDate => setDate(nextDate)}
-        
+
       />
 
     </Layout>
@@ -58,19 +67,19 @@ const BirthDate = () => {
 
 const GenderMenu = () => {
   const [selectedIndex, setSelectedIndex] = React.useState();
-  const [data,setData]=React.useState(['','Male','Female']);
+  const [data, setData] = React.useState(['', 'Male', 'Female']);
 
   return (
     <Layout style={styles.gendercontainer} level="1">
       <Select
-      style={styles.gendercontainer}
+        style={styles.inputContainer}
         label="Gender"
         selectedIndex={selectedIndex}
         onSelect={(index) => setSelectedIndex(index)}
         value={data[selectedIndex]}
       >
-        <SelectItem title="Male"/>
-        <SelectItem title="Female"/>
+        <SelectItem title="Male" />
+        <SelectItem title="Female" />
       </Select>
     </Layout>
   );
@@ -220,105 +229,40 @@ const AccountScreen = () => {
     >
       <ApplicationHeader title="Account" />
       <View style={styles.mainContainer}>
-        <View style={[styles.contentContainer, { backgroundColor: "#E9E9EA" }]}>
-          <View
-            style={{
-              backgroundColor: "#FCFCFC",
-              paddingHorizontal: 12,
-              paddingVertical: 16,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                maxWidth: 500,
-              }}
-            >
-              <Text category="h5" style={{ flex: 9 }}>
-                Login Information
-              </Text>
-              <View
-                style={{
-                  flex: 1,
-                  paddingLeft: 10,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  alignContent: "center",
-                }}
-              >
-                <EditIcon />
-              </View>
-            </View>
+        <ScrollView style={{ height: "100%" }}>
+          <View style={[styles.contentContainer, { backgroundColor: "#E9E9EA" }]}>
 
-            <Input
-              label="Email"
-              disabled={editStatus}
-              style={{
-                maxWidth: 500,
-              }}
-            ></Input>
-            <Input
-              disabled={editStatus}
-              style={{
-                maxWidth: 500,
-              }}
-              label="Password"
-              placeholder="*********"
-            ></Input>
+            <LoginInformationEdit />
+            <PersonalInformationEdit />
+            <CounselorTitle />
+
+
           </View>
-
-          <View
-            style={{
-              backgroundColor: "#FCFCFC",
-              paddingHorizontal: 12,
-              paddingVertical: 16,
-              marginTop: 24,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                maxWidth: 500,
-              }}
-            >
-              <Text category="h5" style={{ flex: 9 }}>
-                Personal Information
-              </Text>
-              <View
-                style={{
-                  flex: 1,
-                  paddingLeft: 10,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  alignContent: "center",
-                }}
-              >
-                <EditIcon />
-              </View>
-            </View>
-
-            <Input
-              label="Full Names"
-              disabled={editStatus}
-              style={{
-                maxWidth: 500,
-              }}
-            ></Input>
-            <GenderMenu />
-           
-            <BirthDate/>
-          </View>
-        </View>
+        </ScrollView>
       </View>
     </Layout>
   );
 };
+
+const GET_USER = gql`
+query GetUser{
+  users{
+    first_name
+    gender
+    id
+    date_of_birth
+  }
+}
+`
 const HomeScreen = () => {
+
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
   const isBig = useMediaQuery({
     minWidth: 768,
   });
+  const { loading, error, data } = useQuery(GET_USER);
+
   const BackIcon = (props) => <Icon {...props} name="menu-outline" />;
 
   const renderBackAction = () => (
@@ -332,6 +276,7 @@ const HomeScreen = () => {
       }}
     />
   );
+  console.log("error : ",error)
   return (
     <Layout
       style={{
@@ -342,7 +287,9 @@ const HomeScreen = () => {
       <ApplicationHeader title="Home" />
       <View style={styles.mainContainer}>
         <View style={styles.contentContainer}>
-          <Text>Content</Text>
+          {loading && <Text>Home COntent</Text>}
+          {error && <Text>{JSON.stringify(error)}</Text>}
+          {data && <Text>{JSON.stringify(data)}</Text>}
         </View>
       </View>
     </Layout>
