@@ -22,17 +22,35 @@ import "firebase/database"
 import { Login } from "./Login";
 import AdminNavigator from './src/admin/AdminHome'
 
+
 import {
   ApolloClient,
   InMemoryCache,
   ApolloProvider,
   gql,
   useQuery,
-  useMutation
+  useMutation,
+  useLazyQuery
 } from "@apollo/client";
 import Drawer from './Drawer';
 
 
+const FETCH_USER = gql`
+  query fetchUser($id:String!){
+    users(
+      where:{
+        id:{
+          _eq:$id
+        }
+      }
+    ){
+      id
+      first_name
+      last_name
+      role
+    }
+  }
+`
 
 
 const cache = new InMemoryCache();
@@ -46,6 +64,25 @@ const client = new ApolloClient({
 });
 
 const AuthenticatedHome = () => {
+  const firebase = React.useContext(FirebaseContext)
+  const { loading, error, data, refetch } = useQuery(FETCH_USER, {
+    variables: { 
+      id:firebase.auth().currentUser.uid
+    },
+  });
+  if(error){
+    return(
+    <Text>Error of the user {JSON.stringify(error)}</Text>
+    )
+  }
+  if(loading){
+    return(
+      <Text>Loading user</Text>
+    )
+  }
+  if(data){
+    console.log("data found : ",data)
+  }
   return (
     <Drawer />
 
@@ -59,12 +96,16 @@ const Routes = () => {
   // const [user,error,initialising] = useAuthState(firebase.auth());
 
   const [authState, setAuthState] = useState({ status: "loading" });
+  const [getUser, { loading, data }] = useLazyQuery(FETCH_USER);
 
   useEffect(() => {
     return firebase.auth().onAuthStateChanged(async user => {
       if (user) {
         const token = await user.getIdToken();
         const idTokenResult = await user.getIdTokenResult();
+        
+
+   
         const hasuraClaim =
           idTokenResult.claims["https://hasura.io/jwt/claims"];
 
@@ -81,7 +122,7 @@ const Routes = () => {
             if (!data.exists) return
             // Force refresh to pick up the latest custom claims changes.
             const token = await user.getIdToken(true);
-            console.log("The current user data ",data)
+            console.log("The current user data ", data)
             setAuthState({ status: "in", user, token });
           });
         }
@@ -93,6 +134,7 @@ const Routes = () => {
 
 
   if (authState.status === "loading") {
+ 
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <ActivityIndicator size={"large"}></ActivityIndicator>
@@ -115,9 +157,9 @@ const Routes = () => {
   }
 
   if (authState.status === "in") {
-    const email=authState.user.email
-    if(email==="admin@mental-health.netlify.app"){
-      return <AdminNavigator/>
+    const email = authState.user.email
+    if (email === "admin@mental-health.netlify.app") {
+      return <AdminNavigator />
     }
     return (
       <AuthenticatedHome />

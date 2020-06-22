@@ -17,7 +17,7 @@ import {
 } from "@ui-kitten/components";
 import * as eva from "@eva-design/eva";
 import Drawer from './Drawer';
-import { useMutation, gql } from '@apollo/client'
+import {  useQuery,useMutation, gql } from '@apollo/client'
 
 const { Navigator, Screen } = createMaterialTopTabNavigator();
 const AlertIcon = (props) => (
@@ -46,6 +46,23 @@ const ADD_USER = gql`
       
     }]) {
                affected_rows
+    }
+  }
+`
+
+const FETCH_USER = gql`
+  query fetchUser($id:String!){
+    users(
+      where:{
+        id:{
+          _eq:$id
+        }
+      }
+    ){
+      id
+      first_name
+      last_name
+      role
     }
   }
 `
@@ -181,33 +198,50 @@ const OrdersScreen = () => {
         setErrorMessage("")
         setLoading(true)
         firebase.auth().createUserWithEmailAndPassword(email, password)
-            .then(res => {
+            .then(async (res) => {
+                setLoginSuccess(true)
+                setErrorMessage("")
                 setLoading(false)
 
                 console.log("User registered successfull ", res)
                 var user = firebase.auth().currentUser;
-
-                user.updateProfile({
-                    displayName: fullName,
-                }).then(function () {
-                    // Update successful.
-                    console.log("Successfully updated user profile")
-                    addUser({
+                try {
+                    const updatProfile = await user.updateProfile({
+                        displayName: fullName,
+                    })
+                    const updateUserData = await addUser({
                         variables: {
                             firstName: fullName.split(" ")[0],
                             lastName: fullName.split(" ")[1],
-                            role: logInAsData[selectedIndex-1],
-                            id: "jadhad"
+                            role: logInAsData[selectedIndex - 1],
+                            id: user.uid
                         }
                     })
+                    console.log("User details : ", updatProfile)
+                    console.log("User db details: ", updateUserData)
+                }
+                catch (e) {
+                    console.log("Any exception : ", e)
+                }
 
-                }).catch(function (error) {
-                    console.log("Failed to update profile")
-                    // An error happened.
+                // .then(function () {
+                //     // Update successful.
+                //     console.log("Successfully updated user profile")
+                //     addUser({
+                //         variables: {
+                //             firstName: fullName.split(" ")[0],
+                //             lastName: fullName.split(" ")[1],
+                //             role: logInAsData[selectedIndex - 1],
+                //             id: "jadhad"
+                //         }
+                //     })
 
-                });
-                setLoginSuccess(true)
-                setErrorMessage("")
+                // }).catch(function (error) {
+                //     console.log("Failed to update profile")
+                //     // An error happened.
+
+                // });
+
             })
             .catch(function (error) {
                 console.log("Failed to create the user ", error)
