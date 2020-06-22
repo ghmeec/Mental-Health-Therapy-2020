@@ -20,6 +20,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import "firebase/auth";
 import "firebase/database"
 import { Login } from "./Login";
+import AdminNavigator from './src/admin/AdminHome'
 
 import {
   ApolloClient,
@@ -80,6 +81,7 @@ const Routes = () => {
             if (!data.exists) return
             // Force refresh to pick up the latest custom claims changes.
             const token = await user.getIdToken(true);
+            console.log("The current user data ",data)
             setAuthState({ status: "in", user, token });
           });
         }
@@ -113,6 +115,10 @@ const Routes = () => {
   }
 
   if (authState.status === "in") {
+    const email=authState.user.email
+    if(email==="admin@mental-health.netlify.app"){
+      return <AdminNavigator/>
+    }
     return (
       <AuthenticatedHome />
     )
