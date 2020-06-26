@@ -19,7 +19,9 @@ import {
   Select,
   SelectItem,
   Calendar,
-  Datepicker
+  Datepicker,
+  List,
+  ListItem
 } from "@ui-kitten/components";
 import { useMediaQuery } from "react-responsive";
 import { FirebaseContext } from "../../utils/firebase";
@@ -157,7 +159,7 @@ class ChatUI extends React.Component {
     );
   }
 }
-const ChatsScreen = () => {
+const TherapistsScreen = () => {
   return (
     <Layout
       style={{
@@ -165,24 +167,10 @@ const ChatsScreen = () => {
         // , justifyContent: "center", alignItems: "center"
       }}
     >
-      <ApplicationHeader title="Counseling" />
+      <ApplicationHeader title="Therapists" />
       <View style={styles.mainContainer}>
         <View style={styles.chatContainer}>
-          <View
-            style={{
-              flex: 2,
-              paddingHorizontal: 12,
-            }}
-          >
-            <ChatUI />
-          </View>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: "white",
-              paddingHorizontal: 12,
-            }}
-          ></View>
+          
         </View>
       </View>
     </Layout>
@@ -191,10 +179,10 @@ const ChatsScreen = () => {
 
 const LogoutIcon = (props) => <Icon {...props} name="log-out-outline" />;
 
-const ChatIcon = (props) => <Icon {...props} name="message-square-outline" />;
+const PeopleIcon = (props) => <Icon {...props} name="people-outline" />;
 const SettingIcon = (props) => <Icon {...props} name="settings-outline" />;
 
-const HomeIcon = (props) => <Icon {...props} name="home-outline" />;
+const HomeIcon = (props) => <Icon {...props} name="grid-outline" />;
 
 const AccountScreen = () => {
   const [value, setValue] = React.useState("");
@@ -267,6 +255,33 @@ const HomeScreen = () => {
 
   const BackIcon = (props) => <Icon {...props} name="menu-outline" />;
 
+  // data to be loaded from internet
+  var values = ["verified", "pending"]
+  const [dataTherapists, setDataTherapists] = React.useState([{
+    title: 'Name',
+    description: 'Description for Item',
+    status: values[Math.floor(Math.random() * values.length)]
+  }
+    , {
+    title: 'Name',
+    description: 'Description for Item',
+    status: "pending"
+  }
+    , {
+    title: 'Name',
+    description: 'Description for Item',
+    status: "verified"
+  }
+    , {
+    title: 'Name',
+    description: 'Description for Item',
+    status: values[Math.floor(Math.random() * values.length)]
+  }
+
+  ])
+
+
+
   const renderBackAction = () => (
     <TopNavigationAction
       icon={BackIcon}
@@ -278,21 +293,122 @@ const HomeScreen = () => {
       }}
     />
   );
-  console.log("error : ",error)
+
+  const renderItemAccessory = (status) => {
+    console.log("Props passed : ", status)
+    return (
+      <View style={{ flexDirection: "row" }}>
+
+        <Button size='tiny'>View</Button>
+      </View>
+
+    )
+  }
+
+  const renderItemIcon = (status) => (
+    <View>
+      {status === "verified"
+        ? <Icon name='person-done-outline'
+          fill="green"
+          style={{
+            height: 26, width: 26,
+            marginRight: 8
+
+          }} /> :
+        <Icon name='person-delete-outline'
+          fill="red"
+          style={{
+            height: 26, width: 26,
+            marginRight: 8
+          }} />
+      }
+    </View>
+  );
+
+  const renderItem = ({ item, index }) => (
+    <ListItem
+      title={`${item.title} ${index + 1}`}
+      description={`${item.description} ${index + 1}`}
+      accessoryLeft={props => renderItemIcon(item.status)}
+      accessoryRight={props => renderItemAccessory(item.status)}
+
+    />
+  );
+
+  console.log("error : ", error)
   return (
     <Layout
       style={{
         flex: 1,
         // , justifyContent: "center", alignItems: "center"
+
       }}
     >
       <ApplicationHeader title="Home" />
       <View style={styles.mainContainer}>
-        <View style={styles.contentContainer}>
-          {loading && <Text>Admin Data Loading</Text>}
+        <ScrollView style={{ height: "100%" }}>
+          {loading && <Text>Loading data </Text>}
           {error && <Text>{JSON.stringify(error)}</Text>}
-          {data && <Text>{JSON.stringify(data)}</Text>}
-        </View>
+          {data && <View>
+            <View style={{
+              flex: 1,
+              height: 100,
+              width: "100%",
+              flexDirection: "row",
+              marginBottom: 10
+            }}>
+              <View style={[styles.dashBoardContentContainer, { height: 100, flex: 1 }]}>
+                <Text>Therapists</Text>
+                <Text>{90}</Text>
+              </View>
+
+              <View style={[styles.dashBoardContentContainer, { height: 100, flex: 1 }]}>
+                <Text>Attendee</Text>
+                <Text>{10}</Text>
+              </View>
+              {/* 
+              <View style={[styles.dashBoardContentContainer, { height: 100, flex: 1 }]}>
+              </View> */}
+
+              <View style={[styles.dashBoardContentContainer, { height: 100, flex: 1 }]}>
+                <Text>Online Users</Text>
+                <Text>{1}</Text>
+              </View>
+
+
+            </View>
+
+            <View style={{flexDirection:"row",paddingHorizontal:4,marginBottom:10}}>
+              <View style={{flex:1,height:400,backgroundColor:"red"}}> 
+
+              </View>
+
+              <View style={{flex:1,height:400,backgroundColor:"green"}}>
+
+              </View>
+            </View>
+            <View style={{
+              // flex: 1,
+              backgroundColor: "red",
+              // height: 400,
+              marginHorizontal: 4,
+              // marginTop: 10
+            }}>
+              {/* <Text >
+                Therapists
+              </Text> */}
+              <List
+                ListHeaderComponent={() => <Text category='h6' style={{
+                  paddingVertical: 8,
+                  paddingHorizontal: 4
+                }}>Therapists</Text>}
+                style={{}}
+                data={dataTherapists}
+                renderItem={renderItem}
+              />
+            </View>
+          </View>}
+        </ScrollView>
       </View>
     </Layout>
   );
@@ -378,7 +494,7 @@ const Footer = (props) => {
     <React.Fragment>
       <View
         style={{
- 
+
           height: 60,
         }}
       >
@@ -414,12 +530,12 @@ const DrawerContent = ({ navigation, state }) => (
       accessoryLeft={HomeIcon}
       style={styles.drawerItem}
     />
-    {/* <DrawerItem
+    <DrawerItem
       title="Therapists"
-      accessoryLeft={ChatIcon}
+      accessoryLeft={PeopleIcon}
       style={styles.drawerItem}
     />
-    <DrawerItem
+    {/* <DrawerItem
       title="Account"
       accessoryLeft={SettingIcon}
       style={styles.drawerItem}
@@ -446,13 +562,13 @@ export const DrawerNavigator = () => {
       }}
     >
       <Screen name="Dashboard" component={HomeScreen} />
-      {/* <Screen name="Chats" component={ChatsScreen} /> */}
+      <Screen name="Therapists" component={TherapistsScreen} />
       {/* <Screen name="Account" component={AccountScreen} /> */}
       {/* <Screen name="Logout" component={LogoutScreen} /> */}
     </Navigator>
   );
 };
 
-export const AppNavigator = () => <DrawerNavigator />;
+const AppNavigator = () => <DrawerNavigator />;
 
 export default AppNavigator;

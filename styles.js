@@ -26,9 +26,15 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    backgroundColor: "#FCFCFC",
+    // backgroundColor: "#FCFCFC",
+    backgroundColor:"#E9E9EA",
     paddingHorizontal: 12,
     paddingVertical: 8,
+  },
+
+  dashBoardContentContainer:{
+    backgroundColor:"white",
+    marginHorizontal:4
   },
   inputContainer: {
     flex: 1,

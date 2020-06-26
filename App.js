@@ -21,7 +21,22 @@ import "firebase/auth";
 import "firebase/database"
 import { Login } from "./Login";
 import AdminNavigator from './src/admin/AdminHome'
+import TherapistHome from './src/therapist/TherapistHome'
 
+const LoadingScreen = ({ message }) => {
+  return (
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+      <ActivityIndicator size={"large"}></ActivityIndicator>
+      <Text style={{
+        textAlign: "center",
+        fontSize: 16,
+        marginTop: 12,
+        fontWeight: "bold"
+      }}>{message}</Text>
+
+    </View>
+  )
+}
 
 import {
   ApolloClient,
@@ -66,27 +81,35 @@ const client = new ApolloClient({
 const AuthenticatedHome = () => {
   const firebase = React.useContext(FirebaseContext)
   const { loading, error, data, refetch } = useQuery(FETCH_USER, {
-    variables: { 
-      id:firebase.auth().currentUser.uid
+    variables: {
+      id: firebase.auth().currentUser.uid
     },
   });
-  if(error){
-    return(
-    <Text>Error of the user {JSON.stringify(error)}</Text>
+  if (error) {
+    return (
+      <Text>Error of the user {JSON.stringify(error)}</Text>
     )
   }
-  if(loading){
-    return(
-      <Text>Loading user</Text>
+  if (loading) {
+    return (
+      <LoadingScreen message="Loading data ...." />
     )
   }
-  if(data){
-    console.log("data found : ",data)
-  }
-  return (
-    <Drawer />
+  if (data) {
+    console.log("data found : ", data)
+    const role = data.users[0].role
+    if (role === "Admin") {
+      return <AdminNavigator />
+    }
+    if (role === "Therapist") {
+      return <TherapistHome />
+    }
 
-  );
+    if (role === "Attendee") {
+      return <Drawer />
+    }
+  }
+
 };
 
 
@@ -103,13 +126,14 @@ const Routes = () => {
       if (user) {
         const token = await user.getIdToken();
         const idTokenResult = await user.getIdTokenResult();
-        
+        const userFinal = await getUser(user.uid)
 
-   
+
+        console.log("User fetched : ", userFinal)
         const hasuraClaim =
           idTokenResult.claims["https://hasura.io/jwt/claims"];
 
-        console.log("The current user : ", user)
+
         if (hasuraClaim) {
           setAuthState({ status: "in", user, token });
         } else {
@@ -134,7 +158,7 @@ const Routes = () => {
 
 
   if (authState.status === "loading") {
- 
+
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <ActivityIndicator size={"large"}></ActivityIndicator>
@@ -143,7 +167,7 @@ const Routes = () => {
           fontSize: 16,
           marginTop: 12,
           fontWeight: "bold"
-        }}>Loading data ...</Text>
+        }}>Initializing the app ...</Text>
 
 
 
@@ -157,10 +181,6 @@ const Routes = () => {
   }
 
   if (authState.status === "in") {
-    const email = authState.user.email
-    if (email === "admin@mental-health.netlify.app") {
-      return <AdminNavigator />
-    }
     return (
       <AuthenticatedHome />
     )

@@ -85,6 +85,7 @@ const GenderMenu = () => {
   );
 };
 
+
 class ChatUI extends React.Component {
   state = {
     messages: [],
@@ -106,6 +107,7 @@ class ChatUI extends React.Component {
       ],
     });
   }
+
   renderSend(props) {
     return (
       <Send {...props} containerStyle={{}}>
@@ -160,7 +162,6 @@ const ChatsScreen = () => {
     <Layout
       style={{
         flex: 1,
-        // , justifyContent: "center", alignItems: "center"
       }}
     >
       <ApplicationHeader title="Counseling" />
@@ -281,7 +282,6 @@ const HomeScreen = () => {
     <Layout
       style={{
         flex: 1,
-        // , justifyContent: "center", alignItems: "center"
       }}
     >
       <ApplicationHeader title="Home" />
