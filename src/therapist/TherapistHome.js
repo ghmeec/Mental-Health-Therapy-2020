@@ -639,15 +639,16 @@ const Header = (props) => (
   <React.Fragment>
     <View
       style={{
-        backgroundColor: "FCFCFC",
+        backgroundColor: "#FCFCFC",
         justifyContent: "center",
         alignContent: "center",
-        height: 100,
+        height: 56,
       }}
     >
       <Text
         style={{
           textAlign: "center",
+          backgroundColor: "#FCFCFC",
           fontSize: 18,
         }}
       >
@@ -692,6 +693,7 @@ const Footer = (props) => {
           onPress={handleLogout}
           accessoryLeft={LogoutIcon}
           style={styles.drawerItem}
+          
         />
       </View>
     </React.Fragment>
@@ -706,6 +708,7 @@ const DrawerContent = ({ navigation, state }) => (
     style={{
       // width:200
       backgroundColor: "#FCFCFC",
+      // paddingTop:30
     }}
     indicatorStyle={{
       backgroundColor: "red",

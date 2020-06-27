@@ -452,15 +452,16 @@ const Header = (props) => (
   <React.Fragment>
     <View
       style={{
-        backgroundColor: "FCFCFC",
+        backgroundColor: "#FCFCFC",
         justifyContent: "center",
         alignContent: "center",
-        height: 100,
+        height: 56,
       }}
     >
       <Text
         style={{
           textAlign: "center",
+          backgroundColor: "#FCFCFC",
           fontSize: 18,
         }}
       >

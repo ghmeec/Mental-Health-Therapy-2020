@@ -22,6 +22,7 @@ import "firebase/database"
 import { Login } from "./Login";
 import AdminNavigator from './src/admin/AdminHome'
 import TherapistHome from './src/therapist/TherapistHome'
+import { default as theme } from './src/theme/theme.json';
 
 const LoadingScreen = ({ message }) => {
   return (
@@ -195,7 +196,7 @@ export default function App() {
     <ApolloProvider client={client}>
       <FirebaseProvider>
         <IconRegistry icons={EvaIconsPack} />
-        <ApplicationProvider {...eva} theme={{ ...eva.light }}>
+        <ApplicationProvider {...eva} theme={{ ...eva.light, ...theme }}>
           <NavigationContainer>
             <Routes />
           </NavigationContainer>

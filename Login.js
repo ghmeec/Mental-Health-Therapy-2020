@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
+import { View, TouchableWithoutFeedback, ActivityIndicator, StyleSheet } from 'react-native'
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { TabBar, Tab, Layout, Text, Input, Icon, Button, Spinner, Select, SelectItem } from '@ui-kitten/components';
 
@@ -17,7 +17,7 @@ import {
 } from "@ui-kitten/components";
 import * as eva from "@eva-design/eva";
 import Drawer from './Drawer';
-import {  useQuery,useMutation, gql } from '@apollo/client'
+import { useQuery, useMutation, gql } from '@apollo/client'
 
 const { Navigator, Screen } = createMaterialTopTabNavigator();
 const AlertIcon = (props) => (
@@ -130,7 +130,7 @@ const UsersScreen = () => {
 
 
     return (
-        <Layout style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Layout style={{ flex: 1, justifyContent: 'center', alignItems: 'center', }}>
             <Text style={{ marginVertical: 10, color: "red", width: 260 }}>{errorMessage}</Text>
             <Input
                 label='Email'
@@ -161,7 +161,8 @@ const UsersScreen = () => {
             <Button
                 style={{
                     width: 260,
-                    marginTop: 16
+                    marginTop: 16,
+                    backgroundColor:"#0771EC"
                 }}
 
                 onPress={login}
@@ -358,21 +359,21 @@ const TabNavigator = () => (
     <View style={{
         maxWidth: 360,
         height: "auto",
-        // "shadowOffset": {
-        //     "width": 0.0,
-        //     "height": 0.5
-        // },
-        // "shadowOpacity": 0.25,
-        // "shadowRadius": 2,
+        backgroundColor: "#FBFAFE",
         marginHorizontal: 16,
-        paddingVertical: 16
+        // paddingTop: 12,
 
 
     }}>
+        <View style={{height:10,backgroundColor:"#0771EC",opacity:0.9}}></View>
         <Navigator tabBar={props => <TopTabBar {...props}
 
         />}
-
+            tabBarOptions={{
+                activeTintColor:"red",
+                labelStyle: { fontSize: 12 },
+                style: { backgroundColor: "#FBFAFE" },
+            }}
         >
             <Screen name='Users' component={UsersScreen} />
             <Screen name='Orders' component={OrdersScreen} />
@@ -381,12 +382,48 @@ const TabNavigator = () => (
 );
 
 export const Login = ({ }) => (
-    <View style={{
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#E9E9EA",
-    }}>
-        <TabNavigator />
+    <View style={{ flex: 1, flexDirection: "row-reverse" }}>
+        <View style={{
+            flex: 1,
+            alignContent: "center",
+            justifyContent: "center",
+            // alignItems:"center",
+            backgroundColor: "#FBFAFE",
+            paddingHorizontal: 30
+        }}>
+            <View style={{
+                height: 100,
+                width: 100,
+                backgroundColor: "#00AE0B"
+            }}>
+
+            </View>
+            <Text style={styles.loginHeroSubtitles} category='s1'>Mental Health e-Therapy Platform</Text>
+            <Text style={{ color: "#2E295A", fontWeight: "bold", fontSize: 28, marginVertical: 16 }} category='h4'>Connect. Chat. Resolve. Be happier</Text>
+            <Text style={styles.loginHeroSubtitles} category='s1'>Experts who are qualified and understands</Text>
+            <Text style={styles.loginHeroSubtitles} category='s1'>Connect to experts to improve your mental wellbeing and learn to manage your mind</Text>
+            <Text style={styles.loginHeroSubtitles} category='s1'>You own the counsellor. You can share your private information or totally reamain anonymous</Text>
+            <Text style={styles.loginHeroSubtitles} category='s1'>Do not let fester. Start it now</Text>
+        </View>
+        <View style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#E9E9EA",
+            // backgroundColor:"#FFFFFF",
+        }}>
+            <TabNavigator />
+        </View>
+
     </View>
 );
+
+const styles = StyleSheet.create({
+    loginHeroSubtitles: {
+        fontSize: 16,
+        marginVertical: 8,
+        color: "#2E295A",
+        opacity: 0.7
+        // color:"yellow"
+    }
+})
