@@ -19,29 +19,33 @@ import {
   Select,
   SelectItem,
   Calendar,
-  Datepicker
+  Datepicker,
+  List,
+  ListItem
 } from "@ui-kitten/components";
-import { FirebaseContext } from "./utils/firebase";
-import { View, ScrollView } from "react-native";
 import { useMediaQuery } from "react-responsive";
-import ApplicationHeader from "./ApplicationHeader";
+import { FirebaseContext } from "../../utils/firebase";
+import { View, ScrollView } from "react-native";
+
+import ApplicationHeader from "../../ApplicationHeader";
 import {
   GiftedChat,
   Actions,
   SystemMessage,
   Send,
 } from "react-native-gifted-chat";
-import styles from "./styles";
+import styles from "../../styles";
 import { StyleSheet } from "react-native";
 import { TouchableWithoutFeedback } from "react-native";
-import LoginInformationEdit from './src/components/LoginInformationEdit'
-import PersonalInformationEdit from './src/components/PersonalInformationEdit'
-import CounselorTitle from './src/components/CounselorTitle'
+import LoginInformationEdit from '../../src/components/LoginInformationEdit'
+import PersonalInformationEdit from '../../src/components/PersonalInformationEdit'
+import CounselorTitle from '../components/CounselorTitle'
 import {
   gql,
   useQuery,
   useMutation
 } from "@apollo/client";
+
 const { Navigator, Screen } = createDrawerNavigator();
 
 const BirthDate = () => {
@@ -85,7 +89,6 @@ const GenderMenu = () => {
   );
 };
 
-
 class ChatUI extends React.Component {
   state = {
     messages: [],
@@ -107,7 +110,6 @@ class ChatUI extends React.Component {
       ],
     });
   }
-
   renderSend(props) {
     return (
       <Send {...props} containerStyle={{}}>
@@ -157,31 +159,18 @@ class ChatUI extends React.Component {
     );
   }
 }
-const ChatsScreen = () => {
+const TherapistsScreen = () => {
   return (
     <Layout
       style={{
         flex: 1,
+        // , justifyContent: "center", alignItems: "center"
       }}
     >
-      <ApplicationHeader title="Counseling" />
+      <ApplicationHeader title="Therapists" />
       <View style={styles.mainContainer}>
         <View style={styles.chatContainer}>
-          <View
-            style={{
-              flex: 2,
-              paddingHorizontal: 12,
-            }}
-          >
-            <ChatUI />
-          </View>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: "white",
-              paddingHorizontal: 12,
-            }}
-          ></View>
+          
         </View>
       </View>
     </Layout>
@@ -190,10 +179,10 @@ const ChatsScreen = () => {
 
 const LogoutIcon = (props) => <Icon {...props} name="log-out-outline" />;
 
-const ChatIcon = (props) => <Icon {...props} name="message-square-outline" />;
+const PeopleIcon = (props) => <Icon {...props} name="people-outline" />;
 const SettingIcon = (props) => <Icon {...props} name="settings-outline" />;
 
-const HomeIcon = (props) => <Icon {...props} name="home-outline" />;
+const HomeIcon = (props) => <Icon {...props} name="grid-outline" />;
 
 const AccountScreen = () => {
   const [value, setValue] = React.useState("");
@@ -266,6 +255,33 @@ const HomeScreen = () => {
 
   const BackIcon = (props) => <Icon {...props} name="menu-outline" />;
 
+  // data to be loaded from internet
+  var values = ["verified", "pending"]
+  const [dataTherapists, setDataTherapists] = React.useState([{
+    title: 'Name',
+    description: 'Description for Item',
+    status: values[Math.floor(Math.random() * values.length)]
+  }
+    , {
+    title: 'Name',
+    description: 'Description for Item',
+    status: "pending"
+  }
+    , {
+    title: 'Name',
+    description: 'Description for Item',
+    status: "verified"
+  }
+    , {
+    title: 'Name',
+    description: 'Description for Item',
+    status: values[Math.floor(Math.random() * values.length)]
+  }
+
+  ])
+
+
+
   const renderBackAction = () => (
     <TopNavigationAction
       icon={BackIcon}
@@ -277,20 +293,122 @@ const HomeScreen = () => {
       }}
     />
   );
-  console.log("error : ",error)
+
+  const renderItemAccessory = (status) => {
+    console.log("Props passed : ", status)
+    return (
+      <View style={{ flexDirection: "row" }}>
+
+        <Button size='tiny'>View</Button>
+      </View>
+
+    )
+  }
+
+  const renderItemIcon = (status) => (
+    <View>
+      {status === "verified"
+        ? <Icon name='person-done-outline'
+          fill="green"
+          style={{
+            height: 26, width: 26,
+            marginRight: 8
+
+          }} /> :
+        <Icon name='person-delete-outline'
+          fill="red"
+          style={{
+            height: 26, width: 26,
+            marginRight: 8
+          }} />
+      }
+    </View>
+  );
+
+  const renderItem = ({ item, index }) => (
+    <ListItem
+      title={`${item.title} ${index + 1}`}
+      description={`${item.description} ${index + 1}`}
+      accessoryLeft={props => renderItemIcon(item.status)}
+      accessoryRight={props => renderItemAccessory(item.status)}
+
+    />
+  );
+
+  console.log("error : ", error)
   return (
     <Layout
       style={{
         flex: 1,
+        // , justifyContent: "center", alignItems: "center"
+
       }}
     >
       <ApplicationHeader title="Home" />
       <View style={styles.mainContainer}>
-        <View style={styles.contentContainer}>
-          {loading && <Text>Home COntent</Text>}
+        <ScrollView style={{ height: "100%" }}>
+          {loading && <Text>Loading data </Text>}
           {error && <Text>{JSON.stringify(error)}</Text>}
-          {data && <Text>{JSON.stringify(data)}</Text>}
-        </View>
+          {data && <View>
+            <View style={{
+              flex: 1,
+              height: 100,
+              width: "100%",
+              flexDirection: "row",
+              marginBottom: 10
+            }}>
+              <View style={[styles.dashBoardContentContainer, { height: 100, flex: 1 }]}>
+                <Text>Therapists</Text>
+                <Text>{90}</Text>
+              </View>
+
+              <View style={[styles.dashBoardContentContainer, { height: 100, flex: 1 }]}>
+                <Text>Attendee</Text>
+                <Text>{10}</Text>
+              </View>
+              {/* 
+              <View style={[styles.dashBoardContentContainer, { height: 100, flex: 1 }]}>
+              </View> */}
+
+              <View style={[styles.dashBoardContentContainer, { height: 100, flex: 1 }]}>
+                <Text>Online Users</Text>
+                <Text>{1}</Text>
+              </View>
+
+
+            </View>
+
+            <View style={{flexDirection:"row",paddingHorizontal:4,marginBottom:10}}>
+              <View style={{flex:1,height:400,backgroundColor:"red"}}> 
+
+              </View>
+
+              <View style={{flex:1,height:400,backgroundColor:"green"}}>
+
+              </View>
+            </View>
+            <View style={{
+              // flex: 1,
+              backgroundColor: "red",
+              // height: 400,
+              marginHorizontal: 4,
+              // marginTop: 10
+            }}>
+              {/* <Text >
+                Therapists
+              </Text> */}
+              <List
+                ListHeaderComponent={() => <Text category='h6' style={{
+                  paddingVertical: 8,
+                  paddingHorizontal: 4
+                }}>Therapists</Text>}
+                style={{}}
+                data={dataTherapists}
+                renderItem={renderItem}
+              />
+            </View>
+          </View>}
+        </ScrollView>
       </View>
     </Layout>
   );
@@ -377,17 +495,11 @@ const Footer = (props) => {
     <React.Fragment>
       <View
         style={{
-          // justifyContent: "center",
-          // alignContent: "center",
-          // paddingTop:16,
-          // paddingLeft:10,
+
           height: 60,
         }}
       >
-        {/* <Text style={{
-        // textAlign: "center",
-        fontSize: 18
-      }}>Footer</Text> */}
+
         <Divider />
         <DrawerItem
           title={loading ? "Logging out..." : "Logout"}
@@ -415,21 +527,21 @@ const DrawerContent = ({ navigation, state }) => (
     footer={Footer}
   >
     <DrawerItem
-      title="Home"
+      title="Dashboard"
       accessoryLeft={HomeIcon}
       style={styles.drawerItem}
     />
     <DrawerItem
-      title="Counseling"
-      accessoryLeft={ChatIcon}
+      title="Therapists"
+      accessoryLeft={PeopleIcon}
       style={styles.drawerItem}
     />
-    <DrawerItem
+    {/* <DrawerItem
       title="Account"
       accessoryLeft={SettingIcon}
       style={styles.drawerItem}
-    />
-    {/* <DrawerItem title="Logout" /> */}
+    /> */}
+
   </Drawer>
 );
 
@@ -450,14 +562,14 @@ export const DrawerNavigator = () => {
         borderRightWidth: 0,
       }}
     >
-      <Screen name="Home" component={HomeScreen} />
-      <Screen name="Chats" component={ChatsScreen} />
-      <Screen name="Account" component={AccountScreen} />
+      <Screen name="Dashboard" component={HomeScreen} />
+      <Screen name="Therapists" component={TherapistsScreen} />
+      {/* <Screen name="Account" component={AccountScreen} /> */}
       {/* <Screen name="Logout" component={LogoutScreen} /> */}
     </Navigator>
   );
 };
 
-export const AppNavigator = () => <DrawerNavigator />;
+const AppNavigator = () => <DrawerNavigator />;
 
 export default AppNavigator;

@@ -20,17 +20,97 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import "firebase/auth";
 import "firebase/database"
 import { Login } from "./Login";
+import AdminNavigator from './src/admin/AdminHome'
+import TherapistHome from './src/therapist/TherapistHome'
+import { default as theme } from './src/theme/theme.json';
+
+const LoadingScreen = ({ message }) => {
+  return (
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+      <ActivityIndicator size={"large"}></ActivityIndicator>
+      <Text style={{
+        textAlign: "center",
+        fontSize: 16,
+        marginTop: 12,
+        fontWeight: "bold"
+      }}>{message}</Text>
+
+    </View>
+  )
+}
+
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloProvider,
+  gql,
+  useQuery,
+  useMutation,
+  useLazyQuery
+} from "@apollo/client";
 import Drawer from './Drawer';
 
 
+const FETCH_USER = gql`
+  query fetchUser($id:String!){
+    users(
+      where:{
+        id:{
+          _eq:$id
+        }
+      }
+    ){
+      id
+      first_name
+      last_name
+      role
+    }
+  }
+`
 
 
+const cache = new InMemoryCache();
+const client = new ApolloClient({
+  uri: "https://ghm-hasura.herokuapp.com/v1/graphql",
+  headers: {
+    "x-hasura-admin-secret": "@ghmeec2020",
+    "content-type": "application/json"
+  },
+  cache
+});
 
 const AuthenticatedHome = () => {
-  return (
-    <Drawer/>
+  const firebase = React.useContext(FirebaseContext)
+  const { loading, error, data, refetch } = useQuery(FETCH_USER, {
+    variables: {
+      id: firebase.auth().currentUser.uid
+    },
+  });
+  if (error) {
+    return (
+      <Text>Error of the user {JSON.stringify(error)}</Text>
+    )
+  }
+  if (loading) {
+    return (
+      <LoadingScreen message="Loading data ...." />
+    )
+  }
+  if (data) {
+    console.log("data found : ", data)
+    const role = data.users[0].role
+    if (role === "Admin") {
+      return <AdminNavigator />
+    }
+    if (role === "Therapist") {
+      return <TherapistHome />
+    }
 
-  );
+    if (role === "Attendee") {
+      return <Drawer />
+    }
+  }
+
 };
 
 
@@ -40,16 +120,21 @@ const Routes = () => {
   // const [user,error,initialising] = useAuthState(firebase.auth());
 
   const [authState, setAuthState] = useState({ status: "loading" });
+  const [getUser, { loading, data }] = useLazyQuery(FETCH_USER);
 
   useEffect(() => {
     return firebase.auth().onAuthStateChanged(async user => {
       if (user) {
         const token = await user.getIdToken();
         const idTokenResult = await user.getIdTokenResult();
+        const userFinal = await getUser(user.uid)
+
+
+        console.log("User fetched : ", userFinal)
         const hasuraClaim =
           idTokenResult.claims["https://hasura.io/jwt/claims"];
 
-        console.log("The current user : ",user)
+
         if (hasuraClaim) {
           setAuthState({ status: "in", user, token });
         } else {
@@ -62,6 +147,7 @@ const Routes = () => {
             if (!data.exists) return
             // Force refresh to pick up the latest custom claims changes.
             const token = await user.getIdToken(true);
+            console.log("The current user data ", data)
             setAuthState({ status: "in", user, token });
           });
         }
@@ -73,15 +159,16 @@ const Routes = () => {
 
 
   if (authState.status === "loading") {
+
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <ActivityIndicator size={"large"}></ActivityIndicator>
         <Text style={{
-          textAlign:"center",
-          fontSize:16,
-          marginTop:12,
-          fontWeight:"bold"
-        }}>Loading data ...</Text>
+          textAlign: "center",
+          fontSize: 16,
+          marginTop: 12,
+          fontWeight: "bold"
+        }}>Initializing the app ...</Text>
 
 
 
@@ -106,14 +193,16 @@ export default function App() {
 
 
   return (
-    <FirebaseProvider>
-      <IconRegistry icons={EvaIconsPack} />
-      <ApplicationProvider {...eva} theme={{ ...eva.light }}>
-        <NavigationContainer>
-        <Routes/>
-        </NavigationContainer>
-      </ApplicationProvider>
-    </FirebaseProvider>
+    <ApolloProvider client={client}>
+      <FirebaseProvider>
+        <IconRegistry icons={EvaIconsPack} />
+        <ApplicationProvider {...eva} theme={{ ...eva.light, ...theme }}>
+          <NavigationContainer>
+            <Routes />
+          </NavigationContainer>
+        </ApplicationProvider>
+      </FirebaseProvider>
+    </ApolloProvider>
 
   );
 }
