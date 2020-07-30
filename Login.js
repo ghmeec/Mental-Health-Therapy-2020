@@ -7,17 +7,8 @@ import "firebase/auth";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { FirebaseContext } from './utils/firebase';
 
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import FirebaseProvider from './utils/firebase'
-import { EvaIconsPack } from "@ui-kitten/eva-icons";
-import {
-    ApplicationProvider,
-    IconRegistry,
-} from "@ui-kitten/components";
-import * as eva from "@eva-design/eva";
-import Drawer from './Drawer';
-import { useQuery, useMutation, gql } from '@apollo/client'
+
+import { useCollection } from '@nandorojo/swr-firestore'
 
 const { Navigator, Screen } = createMaterialTopTabNavigator();
 const AlertIcon = (props) => (
@@ -29,43 +20,6 @@ const LoadingIndicator = (props) => (
 );
 
 // to be moved to queries
-
-const ADD_USER = gql`
-  mutation insert_single_user(
-        $firstName:String!
-        ,$lastName:String!,
-        $role:String!,
-        $id:String!
-
-    ) {
-    insert_users(objects: [{
-      first_name:$firstName,
-      last_name:$lastName,
-      id:$id,
-      role:$role,
-      
-    }]) {
-               affected_rows
-    }
-  }
-`
-
-const FETCH_USER = gql`
-  query fetchUser($id:String!){
-    users(
-      where:{
-        id:{
-          _eq:$id
-        }
-      }
-    ){
-      id
-      first_name
-      last_name
-      role
-    }
-  }
-`
 
 const UsersScreen = () => {
     const firebase = React.useContext(FirebaseContext)
@@ -162,7 +116,7 @@ const UsersScreen = () => {
                 style={{
                     width: 260,
                     marginTop: 16,
-                    backgroundColor:"#0771EC"
+                    backgroundColor: "#0771EC"
                 }}
 
                 onPress={login}
@@ -177,6 +131,9 @@ const UsersScreen = () => {
 
 const OrdersScreen = () => {
     const firebase = React.useContext(FirebaseContext)
+    const {add } = useCollection('users', {
+
+    })
 
     const [fullName, setFullName] = React.useState('');
     const [email, setEmail] = React.useState('');
@@ -189,8 +146,9 @@ const OrdersScreen = () => {
     const [selectedIndex, setSelectedIndex] = React.useState(0);
     const [logInAsData] = React.useState(['Attendee', 'Therapist'])
 
-    const [addUser] = useMutation(ADD_USER)
+    // const [addUser] = useMutation(ADD_USER)
 
+    // console.log("Register users data  : ",data)
     const toggleSecureEntry = () => {
         setSecureTextEntry(!secureTextEntry);
     };
@@ -205,21 +163,29 @@ const OrdersScreen = () => {
                 setLoading(false)
 
                 console.log("User registered successfull ", res)
-                var user = firebase.auth().currentUser;
+                const user = firebase.auth().currentUser;
+                const uid=res.user.uid
+               
                 try {
-                    const updatProfile = await user.updateProfile({
+                    await user.updateProfile({
                         displayName: fullName,
                     })
-                    const updateUserData = await addUser({
-                        variables: {
-                            firstName: fullName.split(" ")[0],
-                            lastName: fullName.split(" ")[1],
-                            role: logInAsData[selectedIndex - 1],
-                            id: user.uid
-                        }
+
+                    // setting up user details in collection
+                    console.log("User registerd as  ",uid)
+
+                    await add({
+                        uid: uid,
+                        first_name: fullName.split(" ")[0],
+                        last_name: fullName.split(" ")[1],
+                        role: logInAsData[selectedIndex - 1]
+                        
+
                     })
-                    console.log("User details : ", updatProfile)
-                    console.log("User db details: ", updateUserData)
+                    
+                    console.log("Everythong is good")
+                    // console.log("User details : ", updatProfile)
+                    // console.log("User db details: ", updateUserData)
                 }
                 catch (e) {
                     console.log("Any exception : ", e)
@@ -365,12 +331,12 @@ const TabNavigator = () => (
 
 
     }}>
-        <View style={{height:10,backgroundColor:"#0771EC",opacity:0.9}}></View>
+        <View style={{ height: 10, backgroundColor: "#0771EC", opacity: 0.9 }}></View>
         <Navigator tabBar={props => <TopTabBar {...props}
 
         />}
             tabBarOptions={{
-                activeTintColor:"red",
+                activeTintColor: "red",
                 labelStyle: { fontSize: 12 },
                 style: { backgroundColor: "#FBFAFE" },
             }}

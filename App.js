@@ -17,6 +17,9 @@ import * as eva from "@eva-design/eva";
 
 import FirebaseProvider, { FirebaseContext } from './utils/firebase'
 import { useAuthState } from 'react-firebase-hooks/auth';
+
+import { Fuego, FuegoProvider, useDocument, useCollection } from '@nandorojo/swr-firestore'
+
 import "firebase/auth";
 import "firebase/database"
 import { Login } from "./Login";
@@ -81,24 +84,41 @@ const client = new ApolloClient({
 
 const AuthenticatedHome = () => {
   const firebase = React.useContext(FirebaseContext)
-  const { loading, error, data, refetch } = useQuery(FETCH_USER, {
-    variables: {
-      id: firebase.auth().currentUser.uid
-    },
-  });
+
+  const { data, update, error } = useCollection(`users`, {
+    where: ['uid', '==', firebase.auth().currentUser.uid],
+    limit: 1,
+    listen: true
+  })
+
+  console.log("Current user : ", firebase.auth().currentUser.uid)
+  // Dr8CObja83fO2cy0xEo6pu7DEC53
+  // dj6TcAJGE2OWFSR9YIObDfarqGs2
+  // if (error) return <Text>Error!</Text>
+  // if (!data) return <Text>Loading...</Text>
+
+  // return <Text>Details: {JSON.stringify(data)}</Text>
+
+
+  // const { loading, error, data, refetch } = useQuery(FETCH_USER, {
+  //   variables: {
+  //     id: firebase.auth().currentUser.uid
+  //   },
+  // });
+
   if (error) {
     return (
-      <Text>Error of the user {JSON.stringify(error)}</Text>
+      <Text>Oops something went wrong!</Text>
     )
   }
-  if (loading) {
+  if (!data) {
     return (
       <LoadingScreen message="Loading data ...." />
     )
   }
   if (data) {
     console.log("data found : ", data)
-    const role = data.users[0].role
+    const role = data[0].role
     if (role === "Admin") {
       return <AdminNavigator />
     }
@@ -120,17 +140,17 @@ const Routes = () => {
   // const [user,error,initialising] = useAuthState(firebase.auth());
 
   const [authState, setAuthState] = useState({ status: "loading" });
-  const [getUser, { loading, data }] = useLazyQuery(FETCH_USER);
+  // const [getUser, { loading, data }] = useLazyQuery(FETCH_USER);
 
   useEffect(() => {
     return firebase.auth().onAuthStateChanged(async user => {
       if (user) {
         const token = await user.getIdToken();
         const idTokenResult = await user.getIdTokenResult();
-        const userFinal = await getUser(user.uid)
+        // const userFinal = await getUser(user.uid)
 
 
-        console.log("User fetched : ", userFinal)
+        // console.log("User fetched : ", userFinal)
         const hasuraClaim =
           idTokenResult.claims["https://hasura.io/jwt/claims"];
 
@@ -189,20 +209,34 @@ const Routes = () => {
 
 }
 
+const firebaseConfig = {
+  apiKey: "AIzaSyC4oKpL8g6PIMYZQWctzhBleqb0FulFWJg",
+  authDomain: "uqsapp.firebaseapp.com",
+  databaseURL: "https://uqsapp.firebaseio.com",
+  projectId: "uqsapp",
+  storageBucket: "uqsapp.appspot.com",
+  messagingSenderId: "1092090054069",
+  appId: "1:1092090054069:web:4574591bba04c55c6e45fc"
+};
+
+const fuego = new Fuego(firebaseConfig)
+
 export default function App() {
 
 
   return (
-    <ApolloProvider client={client}>
-      <FirebaseProvider>
-        <IconRegistry icons={EvaIconsPack} />
-        <ApplicationProvider {...eva} theme={{ ...eva.light, ...theme }}>
-          <NavigationContainer>
-            <Routes />
-          </NavigationContainer>
-        </ApplicationProvider>
-      </FirebaseProvider>
-    </ApolloProvider>
+    <FuegoProvider fuego={fuego}>
+      <ApolloProvider client={client}>
+        <FirebaseProvider>
+          <IconRegistry icons={EvaIconsPack} />
+          <ApplicationProvider {...eva} theme={{ ...eva.light, ...theme }}>
+            <NavigationContainer>
+              <Routes />
+            </NavigationContainer>
+          </ApplicationProvider>
+        </FirebaseProvider>
+      </ApolloProvider>
+    </FuegoProvider>
 
   );
 }
