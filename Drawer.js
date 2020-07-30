@@ -94,7 +94,7 @@ class ChatUI extends React.Component {
     messages: [],
   };
 
-  componentDidMount() {
+  componentDidMount() {y
     this.setState({
       messages: [
         {

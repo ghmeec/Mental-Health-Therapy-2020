@@ -196,7 +196,8 @@ const LogoutIcon = (props) => <Icon {...props} name="log-out-outline" />;
 const ChatIcon = (props) => <Icon {...props} name="message-square-outline" />;
 const SettingIcon = (props) => <Icon {...props} name="settings-outline" />;
 const ApplicationIcon = (props) => <Icon {...props} name="book-outline" />;
-
+const NotebookIcon = (props) => <Icon {...props} name="book-open-outline" />;
+const ReviewIcon = (props) => <Icon {...props} name="layers-outline" />;
 const EditIcon = (props) => (
   <>
     <TouchableOpacity onPress={() => {
@@ -598,8 +599,80 @@ const MyApplicationScreen = () => {
     </Layout>
   );
 };
+ const NotebookScreen=()=>{
+  const navigation = useNavigation();
+  const isDrawerOpen = useIsDrawerOpen();
+  const isBig = useMediaQuery({
+    minWidth: 768,
+  });
 
+  const BackIcon = (props) => <Icon {...props} name="menu-outline" />;
 
+  const renderBackAction = () => (
+    <TopNavigationAction
+      icon={BackIcon}
+      onPress={() => {
+        if (isDrawerOpen) {
+        } else {
+          navigation.openDrawer();
+        }
+      }}
+    />
+  );
+  return (
+    <Layout
+      style={{
+        flex: 1,
+        // , justifyContent: "center", alignItems: "center"
+      }}
+    >
+      <ApplicationHeader title="Notebook" />
+      <View style={styles.mainContainer}>
+        <View style={styles.contentContainer}>
+          <Text>Take Note Here</Text>
+        </View>
+      </View>
+    </Layout>
+  );
+
+ }
+ const ReviewScreen=()=>{
+  const navigation = useNavigation();
+  const isDrawerOpen = useIsDrawerOpen();
+  const isBig = useMediaQuery({
+    minWidth: 768,
+  });
+
+  const BackIcon = (props) => <Icon {...props} name="menu-outline" />;
+
+  const renderBackAction = () => (
+    <TopNavigationAction
+      icon={BackIcon}
+      onPress={() => {
+        if (isDrawerOpen) {
+        } else {
+          navigation.openDrawer();
+        }
+      }}
+    />
+  );
+  return (
+    <Layout
+      style={{
+        flex: 1,
+        // , justifyContent: "center", alignItems: "center"
+      }}
+    >
+      <ApplicationHeader title="Review" />
+      <View style={styles.mainContainer}>
+        <View style={styles.contentContainer}>
+          <Text>Take Review Here</Text>
+        </View>
+      </View>
+    </Layout>
+  );
+
+ }
 
 const LogoutScreen = () => {
   const firebase = React.useContext(FirebaseContext);
@@ -731,7 +804,16 @@ const DrawerContent = ({ navigation, state }) => (
       accessoryLeft={ApplicationIcon}
       style={styles.drawerItem}
     />
-
+    <DrawerItem
+    title="Notebook"
+    accessoryLeft={NotebookIcon}
+    style={styles.drawerItem}
+    />
+<DrawerItem
+    title="Review"
+    accessoryLeft={ReviewIcon}
+    style={styles.drawerItem}
+    />
   </Drawer>
 );
 
@@ -755,7 +837,8 @@ export const DrawerNavigator = () => {
       <Screen name="Home" component={HomeScreen} />
       <Screen name="Counselling" component={CounsellingScreen} />
       <Screen name="MyApplication" component={MyApplicationScreen} />
-
+      <Screen name="Notebook" component={NotebookScreen}/>   
+      <Screen name="Review" component={ReviewScreen}/> 
     </Navigator>
   );
 };

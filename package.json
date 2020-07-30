@@ -11,6 +11,7 @@
     "predeploy": "expo build:web"
   },
   "dependencies": {
+    "@ant-design/icons": "^4.2.1",
     "@apollo/client": "^3.0.0-rc.6",
     "@apollo/react-hooks": "^3.1.5",
     "@eva-design/eva": "^2.0.0",
