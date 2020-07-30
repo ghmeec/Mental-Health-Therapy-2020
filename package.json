@@ -11,11 +11,13 @@
     "predeploy": "expo build:web"
   },
   "dependencies": {
+    "@ant-design/icons": "^4.2.1",
     "@apollo/client": "^3.0.0-rc.6",
     "@apollo/react-hooks": "^3.1.5",
     "@eva-design/eva": "^2.0.0",
     "@expo/match-media": "0.0.0-alpha.5",
     "@expo/webpack-config": "^0.12.12",
+    "@nandorojo/swr-firestore": "^0.10.0",
     "@react-native-community/masked-view": "0.1.6",
     "@react-navigation/drawer": "^5.8.1",
     "@react-navigation/material-top-tabs": "^5.2.10",

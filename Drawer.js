@@ -42,6 +42,9 @@ import {
   useQuery,
   useMutation
 } from "@apollo/client";
+
+import {useCollection } from '@nandorojo/swr-firestore'
+
 const { Navigator, Screen } = createDrawerNavigator();
 
 const BirthDate = () => {
@@ -91,7 +94,7 @@ class ChatUI extends React.Component {
     messages: [],
   };
 
-  componentDidMount() {
+  componentDidMount() {y
     this.setState({
       messages: [
         {
@@ -256,13 +259,20 @@ query GetUser{
 }
 `
 const HomeScreen = () => {
-
+  const firebase = React.useContext(FirebaseContext)
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
   const isBig = useMediaQuery({
     minWidth: 768,
   });
-  const { loading, error, data } = useQuery(GET_USER);
+
+
+
+  const { data, update, error } = useCollection(`users`, {
+    where: ['uid', '==', firebase.auth().currentUser.uid],
+    limit: 1,
+    listen: false
+  })
 
   const BackIcon = (props) => <Icon {...props} name="menu-outline" />;
 
@@ -277,7 +287,7 @@ const HomeScreen = () => {
       }}
     />
   );
-  console.log("error : ",error)
+  console.log("error : ", error)
   return (
     <Layout
       style={{
@@ -287,8 +297,8 @@ const HomeScreen = () => {
       <ApplicationHeader title="Home" />
       <View style={styles.mainContainer}>
         <View style={styles.contentContainer}>
-          {loading && <Text>Home COntent</Text>}
           {error && <Text>{JSON.stringify(error)}</Text>}
+          {!data && <Text>Home COntent</Text>}
           {data && <Text>{JSON.stringify(data)}</Text>}
         </View>
       </View>
