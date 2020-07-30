@@ -674,6 +674,8 @@ const MyApplicationScreen = () => {
 
  }
 
+//  everything is not firebase
+
 const LogoutScreen = () => {
   const firebase = React.useContext(FirebaseContext);
   const [loading, setLoading] = React.useState(false);
