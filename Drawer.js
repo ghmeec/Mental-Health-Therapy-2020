@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useEffect, useCallback, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import {
   createDrawerNavigator,
@@ -19,7 +19,8 @@ import {
   Select,
   SelectItem,
   Calendar,
-  Datepicker
+  Datepicker,
+  List, ListItem
 } from "@ui-kitten/components";
 import { FirebaseContext } from "./utils/firebase";
 import { View, ScrollView } from "react-native";
@@ -43,7 +44,7 @@ import {
   useMutation
 } from "@apollo/client";
 
-import {useCollection } from '@nandorojo/swr-firestore'
+import { useCollection } from '@nandorojo/swr-firestore'
 
 const { Navigator, Screen } = createDrawerNavigator();
 
@@ -89,78 +90,75 @@ const GenderMenu = () => {
 };
 
 
-class ChatUI extends React.Component {
-  state = {
-    messages: [],
-  };
+const ChatUI = () => {
+  const [messages, setMessages] = useState([]);
 
-  componentDidMount() {
-    this.setState({
-      messages: [
-        {
-          _id: 1,
-          text: "Hello developer",
-          createdAt: new Date(),
-          user: {
-            _id: 2,
-            name: "React Native",
-            avatar: "https://placeimg.com/140/140/any",
-          },
+  useEffect(() => {
+    setMessages([
+      {
+        _id: 1,
+        text: 'hello George, how are you feeling today',
+        createdAt: new Date(),
+        user: {
+          _id: 2,
+          name: 'Therapist One',
         },
-      ],
-    });
-  }
+      },
+      {
+        _id: 2,
+        text: 'not so good',
+        createdAt: new Date(),
+        user: {
+          _id: 1,
+          name: 'George Millanzi',
+        },
+      },
+      {
+        _id: 3,
+        text: 'can you tell me why you feeling so if you wont mind',
+        createdAt: new Date(),
+        user: {
+          _id: 2,
+          name: 'Therapist One',
+        },
+      }
 
-  renderSend(props) {
-    return (
-      <Send {...props} containerStyle={{}}>
-        <View
-          style={{
-            marginRight: 10,
-            marginBottom: 5,
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
-            alignSelf: "center",
-            marginRight: 15,
-          }}
-        >
-          <Text style={{ fontSize: 14 }} status="primary" category="label">
-            Send
-          </Text>
-          <Icon style={styles.icon} fill="#3366FF" name="paper-plane-outline" />
-        </View>
-      </Send>
-    );
-  }
+    ])
+  }, [])
 
-  onSend(messages = []) {
-    this.setState((previousState) => ({
-      messages: GiftedChat.append(previousState.messages, messages),
-    }));
-  }
+  const onSend = useCallback((messages = []) => {
+    setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
+  }, [])
 
-  render() {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "#FFFFFF",
-        }}
-      >
-        <GiftedChat
-          messages={this.state.messages}
-          onSend={(messages) => this.onSend(messages)}
-          user={{
-            _id: 1,
-          }}
-          renderSend={this.renderSend}
-        />
+  return (
+    <View style={{
+      flex: 1,
+      backgroundColor: "#FCFCFC"
+    }}>
+      <View style={{ paddingVertical: 8, paddingHorizontal: 12, backgroundColor: "#F0F0F0", }}>
+        <Text>Active Sessions with {"Therapist One"}</Text>
       </View>
-    );
-  }
+      <GiftedChat
+        messages={messages}
+        onSend={messages => onSend(messages)}
+        user={{
+          _id: 1,
+        }}
+      />
+    </View>
+  )
 }
+
 const ChatsScreen = () => {
+
+  const data = [{
+    name: 'Bot One',
+  }]
+  const renderItem = ({ item, index }) => (
+    <ListItem title={`${item.name} ${index + 1}`} />
+  );
+
+
   return (
     <Layout
       style={{
@@ -174,6 +172,7 @@ const ChatsScreen = () => {
             style={{
               flex: 2,
               paddingHorizontal: 12,
+
             }}
           >
             <ChatUI />
@@ -181,10 +180,62 @@ const ChatsScreen = () => {
           <View
             style={{
               flex: 1,
-              backgroundColor: "white",
-              paddingHorizontal: 12,
+              backgroundColor: "#FCFCFC",
             }}
-          ></View>
+          >
+            <View style={{}}>
+              <View style={{ paddingVertical: 8, paddingHorizontal: 12, backgroundColor: "#F0F0F0", }}>
+                <Text>Your Counsellor</Text>
+              </View>
+              <View style={{
+                marginVertical: 12,
+                alignContent: "center",
+              }}>
+                <View style={{
+                  height: 100,
+                  width: 100,
+                  backgroundColor: "#F0F0F0",
+                  alignSelf: "center",
+                  borderRadius: 100
+                }}>
+
+                </View>
+                <Text style={{ textAlign: "center", marginTop: 8 }}>Therapist One</Text>
+              </View>
+              <View>
+                <View style={{ marginTop: 12, paddingVertical: 4, paddingHorizontal: 12, }}>
+                  <Text style={{ textDecorationLine: "underline" }}>Schedule</Text>
+                </View>
+                <View style={{ marginTop: 0, paddingVertical: 4, paddingHorizontal: 12 }}>
+                  <Text>Monday , 7:00 pm - 8:00 pm</Text>
+                  <Text>Wednesday , 1:00 pm - 2:00 pm</Text>
+                </View>
+              </View>
+              <View>
+                <View style={{ marginTop: 24, paddingVertical: 8, paddingHorizontal: 12, backgroundColor: "#F0F0F0", }}>
+                  <Text>Chatbot Support</Text>
+                </View>
+                <View style={{
+                  paddingVertical: 8, paddingHorizontal: 12
+                }}>
+                  <Text>In case of Counsellor unavailabity you can just start chatting with our chatbot</Text>
+                </View>
+                <View style={{
+                  paddingVertical: 8, paddingHorizontal: 12,
+                  flexDirection: "row",
+                }}>
+                  <Icon name='robot' pack='material' style={{
+                    height: 32, width: 32,
+                    color: ""
+                  }} />
+                  <Text style={{ paddingLeft: 8, height: "100%", paddingTop: 6 }}>Activate Bot</Text>
+
+                </View>
+              </View>
+
+
+            </View>
+          </View>
         </View>
       </View>
     </Layout>
@@ -297,9 +348,12 @@ const HomeScreen = () => {
       <ApplicationHeader title="Home" />
       <View style={styles.mainContainer}>
         <View style={styles.contentContainer}>
-          {error && <Text>{JSON.stringify(error)}</Text>}
-          {!data && <Text>Home COntent</Text>}
-          {data && <Text>{JSON.stringify(data)}</Text>}
+          <View style={{ flex: 1, backgroundColor: "#FCFCFC" }}>
+            {error && <Text>{JSON.stringify(error)}</Text>}
+            {!data && <Text>Home COntent</Text>}
+            {data && <Text>{JSON.stringify(data)}</Text>}
+          </View>
+
         </View>
       </View>
     </Layout>
