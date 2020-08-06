@@ -27,6 +27,7 @@ import { Login } from "./Login";
 import AdminNavigator from './src/admin/AdminHome'
 import TherapistHome from './src/therapist/TherapistHome'
 import { default as theme } from './src/theme/theme.json';
+import { MaterialIconsPack } from './MaterialCommunityIcons'; 
 
 const LoadingScreen = ({ message }) => {
   return (
@@ -229,7 +230,7 @@ export default function App() {
     <FuegoProvider fuego={fuego}>
       <ApolloProvider client={client}>
         <FirebaseProvider>
-          <IconRegistry icons={EvaIconsPack} />
+          <IconRegistry icons={[EvaIconsPack,MaterialIconsPack ]} />
           <ApplicationProvider {...eva} theme={{ ...eva.light, ...theme }}>
             <NavigationContainer>
               <Routes />
