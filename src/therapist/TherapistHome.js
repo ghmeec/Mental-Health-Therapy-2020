@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import {
   createDrawerNavigator,
@@ -45,6 +45,16 @@ import {
 } from "@apollo/client";
 
 import * as DocumentPicker from 'expo-document-picker';
+import { useCollection } from '@nandorojo/swr-firestore'
+import { useAuthState } from 'react-firebase-hooks/auth';
+// import { FirebaseContext } from "../../utils/firebase";
+import {
+  useRecoilState,
+  useRecoilValue,
+} from 'recoil';
+import useSWR from "swr";
+
+import { messageState } from '../../App'
 
 const { Navigator, Screen } = createDrawerNavigator();
 
@@ -89,76 +99,7 @@ const GenderMenu = () => {
   );
 };
 
-class ChatUI extends React.Component {
-  state = {
-    messages: [],
-  };
 
-  componentDidMount() {
-    this.setState({
-      messages: [
-        {
-          _id: 1,
-          text: "Hello developer",
-          createdAt: new Date(),
-          user: {
-            _id: 2,
-            name: "React Native",
-            avatar: "https://placeimg.com/140/140/any",
-          },
-        },
-      ],
-    });
-  }
-  renderSend(props) {
-    return (
-      <Send {...props} containerStyle={{}}>
-        <View
-          style={{
-            marginRight: 10,
-            marginBottom: 5,
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
-            alignSelf: "center",
-            marginRight: 15,
-          }}
-        >
-          <Text style={{ fontSize: 14 }} status="primary" category="label">
-            Send
-          </Text>
-          <Icon style={styles.icon} fill="#3366FF" name="paper-plane-outline" />
-        </View>
-      </Send>
-    );
-  }
-
-  onSend(messages = []) {
-    this.setState((previousState) => ({
-      messages: GiftedChat.append(previousState.messages, messages),
-    }));
-  }
-
-  render() {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "#FFFFFF",
-        }}
-      >
-        <GiftedChat
-          messages={this.state.messages}
-          onSend={(messages) => this.onSend(messages)}
-          user={{
-            _id: 1,
-          }}
-          renderSend={this.renderSend}
-        />
-      </View>
-    );
-  }
-}
 const ChatsScreen = () => {
   return (
     <Layout
@@ -350,6 +291,168 @@ const HomeScreen = () => {
   );
 };
 
+const ChatUI = () => {
+  const [messages, setMessages] = useState([]);
+  const firebase = React.useContext(FirebaseContext);
+  const [user, loading, error] = useAuthState(firebase.auth());
+  const currentUser = user.toJSON();
+  const [text, setText] = useRecoilState(messageState);
+
+  console.log("Chat UI user is here : ", user)
+  // const [messages, setMessages] = useState([]);
+  // const thread = "Room 1";  //this to be picked from somehwer amaizing
+
+  const [threads, setThreads] = useState(null);
+  const [thread, setThread] = useState(null);
+  // const [loading, setLoading] = useState(true);
+
+  /**
+   * Fetch threads from Firestore
+   */
+  useEffect(() => {
+    const unsubscribe = firebase.firestore()
+      .collection('THREADS')
+      // .orderBy('latestMessage.createdAt', 'desc')
+      .onSnapshot(querySnapshot => {
+        const threads = querySnapshot.docs.map(documentSnapshot => {
+          return {
+            _id: documentSnapshot.id,
+            // give defaults
+            name: '',
+            ...documentSnapshot.data()
+          };
+        });
+
+        console.log("Loadging all the threads here ", threads)
+        setThreads(threads);
+        setThread(threads[0]) //set as demo thread
+
+        if (loading) {
+          setLoading(false);
+        }
+      });
+
+    /**
+     * unsubscribe listener
+     */
+    return () => unsubscribe();
+  }, []);
+
+
+  async function handleSend(messages) {
+    const text = messages[0].text;
+
+    firebase.firestore()
+      .collection('THREADS')
+      .doc(thread._id)
+      .collection('MESSAGES')
+      .add({
+        text,
+        createdAt: new Date().getTime(),
+        user: {
+          _id: currentUser.uid,
+          email: currentUser.email
+        }
+      });
+
+    await firebase.firestore()
+      .collection('THREADS')
+      .doc(thread._id)
+      .set(
+        {
+          latestMessage: {
+            text,
+            user_id: currentUser.uid,
+            createdAt: new Date().getTime()
+          }
+        },
+        { merge: true }
+      );
+  }
+
+  useEffect(() => {
+    if (threads) {
+      const messagesListener = firebase.firestore()
+        .collection('THREADS')
+        .doc(thread._id)
+        .collection('MESSAGES')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(querySnapshot => {
+          const messages = querySnapshot.docs.map(doc => {
+            const firebaseData = doc.data();
+
+            const data = {
+              _id: doc.id,
+              text: '',
+              createdAt: new Date().getTime(),
+              ...firebaseData
+            };
+
+            if (!firebaseData.system) {
+              data.user = {
+                ...firebaseData.user,
+                name: firebaseData.user.email
+              };
+            }
+
+            return data;
+          });
+          setText(messages[0])
+          setMessages(messages);
+        });
+
+      // Stop listening for updates whenever the component unmounts
+      return () => messagesListener();
+    }
+  }, [thread]);
+
+  return (
+    <View style={{
+      flex: 1,
+      backgroundColor: "#FCFCFC"
+    }}>
+      <View style={{ paddingVertical: 8, paddingHorizontal: 12, backgroundColor: "#F0F0F0", }}>
+        <Text>Active Session with Patient {"Patient One"}</Text>
+        {/* <ChatRooms /> */}
+      </View>
+      <GiftedChat
+        messages={messages}
+        onSend={handleSend}
+        user={{ _id: currentUser.uid }}
+        placeholder='Type your message here...'
+        alwaysShowSend
+        showUserAvatar
+        scrollToBottom
+      // renderBubble={renderBubble}
+      // renderLoading={renderLoading}
+      // renderSend={renderSend}
+      // scrollToBottomComponent={scrollToBottomComponent}
+      // renderSystemMessage={renderSystemMessage}
+      />
+    </View>
+  )
+}
+
+const fetcher = url => fetch(url).then(res => res.json());
+
+
+const TextAnalysis = () => {
+  const [text, setText] = useRecoilState(messageState);
+  console.log("Recived text is here ", text)
+  const { data, error } = useSWR(text ?
+    text.text == "" ? null :
+      `https://mental-health-2020.herokuapp.com/predict?msg=${text.text}` : null,
+    fetcher
+  );
+
+
+  if (error) return <Text>An error has occurred. {JSON.stringify(error)}</Text>;
+  if (!data) return <Text>Analysing the last message ...</Text>
+
+  return (
+    <Text>The Patient potentially is dealing with <Text style={{ color: "red" }}>{(data.sentiment)}</Text></Text>
+  )
+}
 const CounsellingScreen = () => {
 
   const navigation = useNavigation();
@@ -382,7 +485,39 @@ const CounsellingScreen = () => {
       <ApplicationHeader title="Counselling" />
       <View style={styles.mainContainer}>
         <View style={styles.contentContainer}>
-          <Text>COunselling content</Text>
+          <View style={{
+            flex: 1,
+            flexDirection: "row",
+          }}>
+            <View
+              style={{
+                flex: 2,
+                paddingHorizontal: 12,
+
+              }}
+            >
+              <ChatUI />
+            </View>
+
+            <View
+              style={{
+                flex: 1,
+                paddingHorizontal: 12,
+                backgroundColor: "#FFFFFF"
+
+              }}
+            >
+              <View style={{ marginHorizontal: -12, paddingVertical: 8, paddingHorizontal: 12, backgroundColor: "#F0F0F0", }}>
+                <Text>Message Analysis Tool</Text>
+              </View>
+              <TextAnalysis />
+
+            </View>
+
+
+          </View>
+
+
         </View>
       </View>
     </Layout>
@@ -534,7 +669,7 @@ const MyApplicationScreen = () => {
                 <SelectItem title="Bsc IN Therapy" />
                 <SelectItem title="Masters In Therapy" />
               </Select>
-              
+
               <Input
                 // value={value}
                 label='Qualificatin Description'
@@ -545,9 +680,9 @@ const MyApplicationScreen = () => {
               // secureTextEntry={secureTextEntry}
               // onChangeText={nextValue => setValue(nextValue)}
               />
-              
+
               <Button
-              
+
                 onPress={() => {
                   DocumentPicker.getDocumentAsync(options)
                     .then(
@@ -562,7 +697,7 @@ const MyApplicationScreen = () => {
                 }
                 style={{
                   // width: 100,
-                  marginTop:12
+                  marginTop: 12
                 }}
               >
                 Add support documents
@@ -579,18 +714,18 @@ const MyApplicationScreen = () => {
                 // value={value}
                 label='Experience Description'
                 placeholder='Year'
-             
+
               />
               <Select
                 label="Experience Review"
-              
+
               >
                 <SelectItem title="Articles" />
                 <SelectItem title="Books" />
-              
+
               </Select>
             </View>
-            
+
 
 
           </View>
@@ -599,7 +734,7 @@ const MyApplicationScreen = () => {
     </Layout>
   );
 };
- const NotebookScreen=()=>{
+const NotebookScreen = () => {
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
   const isBig = useMediaQuery({
@@ -635,8 +770,8 @@ const MyApplicationScreen = () => {
     </Layout>
   );
 
- }
- const ReviewScreen=()=>{
+}
+const ReviewScreen = () => {
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
   const isBig = useMediaQuery({
@@ -672,7 +807,7 @@ const MyApplicationScreen = () => {
     </Layout>
   );
 
- }
+}
 
 //  everything is not firebase
 
@@ -768,7 +903,7 @@ const Footer = (props) => {
           onPress={handleLogout}
           accessoryLeft={LogoutIcon}
           style={styles.drawerItem}
-          
+
         />
       </View>
     </React.Fragment>
@@ -807,14 +942,14 @@ const DrawerContent = ({ navigation, state }) => (
       style={styles.drawerItem}
     />
     <DrawerItem
-    title="Notebook"
-    accessoryLeft={NotebookIcon}
-    style={styles.drawerItem}
+      title="Notebook"
+      accessoryLeft={NotebookIcon}
+      style={styles.drawerItem}
     />
-<DrawerItem
-    title="Review"
-    accessoryLeft={ReviewIcon}
-    style={styles.drawerItem}
+    <DrawerItem
+      title="Review"
+      accessoryLeft={ReviewIcon}
+      style={styles.drawerItem}
     />
   </Drawer>
 );
@@ -839,8 +974,8 @@ export const DrawerNavigator = () => {
       <Screen name="Home" component={HomeScreen} />
       <Screen name="Counselling" component={CounsellingScreen} />
       <Screen name="MyApplication" component={MyApplicationScreen} />
-      <Screen name="Notebook" component={NotebookScreen}/>   
-      <Screen name="Review" component={ReviewScreen}/> 
+      <Screen name="Notebook" component={NotebookScreen} />
+      <Screen name="Review" component={ReviewScreen} />
     </Navigator>
   );
 };
