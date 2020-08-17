@@ -25,7 +25,7 @@ import {
 } from "@ui-kitten/components";
 import { useMediaQuery } from "react-responsive";
 import { FirebaseContext } from "../../utils/firebase";
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, Dimensions } from "react-native";
 
 import ApplicationHeader from "../../ApplicationHeader";
 import {
@@ -45,7 +45,73 @@ import {
   useQuery,
   useMutation
 } from "@apollo/client";
+import {
+  BarChart,
+  PieChart
+} from "react-native-chart-kit";
 
+const chartConfig = {
+  backgroundGradientFrom: "#1E2923",
+  backgroundGradientFromOpacity: 1,
+  backgroundGradientTo: "#08130D",
+  backgroundGradientToOpacity: 1,
+  // backgroundColor: "#FFFFFF",
+  fillShadowGradient: "#E5E5E5",
+  fillShadowGradientOpacity: 1,
+  color: (opacity = 1) => `#F3F3F3`,
+  strokeWidth: 2, // optional, default 3
+  barPercentage: 1,
+  useShadowColorFromDataset: false // optional
+};
+
+const screenWidth = 370;
+
+const datas = {
+  labels: ["January", "February", "March", "April", "May", "June"],
+  datasets: [
+    {
+      data: [20, 45, 28, 80, 99, 43]
+    }
+  ]
+};
+
+const dataPie = [
+  {
+    name: "Anxiety",
+    population: 21500000,
+    color: "rgba(131, 167, 234, 1)",
+    legendFontColor: "#7F7F7F",
+    legendFontSize: 15
+  },
+  {
+    name: "Depression",
+    population: 2800000,
+    color: "#F00",
+    legendFontColor: "#7F7F7F",
+    legendFontSize: 15
+  },
+  {
+    name: "Suicide Risk",
+    population: 527612,
+    color: "red",
+    legendFontColor: "#7F7F7F",
+    legendFontSize: 15
+  },
+  {
+    name: "Alcohol",
+    population: 8538000,
+    color: "#ffffff",
+    legendFontColor: "#7F7F7F",
+    legendFontSize: 15
+  },
+  {
+    name: "Stress",
+    population: 11920000,
+    color: "rgb(0, 0, 255)",
+    legendFontColor: "#7F7F7F",
+    legendFontSize: 15
+  }
+];
 const { Navigator, Screen } = createDrawerNavigator();
 
 const BirthDate = () => {
@@ -170,7 +236,7 @@ const TherapistsScreen = () => {
       <ApplicationHeader title="Therapists" />
       <View style={styles.mainContainer}>
         <View style={styles.chatContainer}>
-          
+
         </View>
       </View>
     </Layout>
@@ -347,9 +413,9 @@ const HomeScreen = () => {
       <ApplicationHeader title="Home" />
       <View style={styles.mainContainer}>
         <ScrollView style={{ height: "100%" }}>
-          {loading && <Text>Loading data </Text>}
-          {error && <Text>{JSON.stringify(error)}</Text>}
-          {data && <View>
+          {/* {loading && <Text>Loading data </Text>}
+          {error && <Text>{JSON.stringify(error)}</Text>} */}
+          <View>
             <View style={{
               flex: 1,
               height: 100,
@@ -378,13 +444,43 @@ const HomeScreen = () => {
 
             </View>
 
-            <View style={{flexDirection:"row",paddingHorizontal:4,marginBottom:10}}>
-              <View style={{flex:1,height:400,backgroundColor:"red"}}> 
+            <View style={{ flex: 1, height: 400, paddingHorizontal: 4, marginBottom: 10 }}>
+              <PieChart
+                data={dataPie}
+                width={screenWidth}
+                height={220}
+                chartConfig={chartConfig}
+                accessor="population"
+                backgroundColor="transparent"
+                paddingLeft="15"
+                absolute
+              />
+            </View>
 
+
+            <View style={{ flexDirection: "row", paddingHorizontal: 4, marginBottom: 10 }}>
+              <View style={{ flex: 1, height: 400 }}>
+                <BarChart
+                  style={{}}
+                  data={datas}
+                  width={screenWidth}
+                  height={400}
+                  yAxisLabel=""
+                  chartConfig={chartConfig}
+                  verticalLabelRotation={0}
+                />
               </View>
 
-              <View style={{flex:1,height:400,backgroundColor:"green"}}>
-
+              <View style={{ flex: 1, height: 400 }}>
+                <BarChart
+                  style={{}}
+                  data={datas}
+                  width={screenWidth}
+                  height={400}
+                  yAxisLabel=""
+                  chartConfig={chartConfig}
+                  verticalLabelRotation={0}
+                />
               </View>
             </View>
             <View style={{
@@ -407,7 +503,7 @@ const HomeScreen = () => {
                 renderItem={renderItem}
               />
             </View>
-          </View>}
+          </View>
         </ScrollView>
       </View>
     </Layout>

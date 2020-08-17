@@ -27,7 +27,16 @@ import { Login } from "./Login";
 import AdminNavigator from './src/admin/AdminHome'
 import TherapistHome from './src/therapist/TherapistHome'
 import { default as theme } from './src/theme/theme.json';
-import { MaterialIconsPack } from './MaterialCommunityIcons'; 
+import { MaterialIconsPack } from './MaterialCommunityIcons';
+
+import {
+  RecoilRoot,
+  atom,
+  selector,
+  useRecoilState,
+  useRecoilValue,
+} from 'recoil';
+
 
 const LoadingScreen = ({ message }) => {
   return (
@@ -223,22 +232,30 @@ const firebaseConfig = {
 
 const fuego = new Fuego(firebaseConfig)
 
+
+export const messageState = atom({
+  key: 'latestMessage', // unique ID (with respect to other atoms/selectors)
+  default: '', // default value (aka initial value)
+});
+
 export default function App() {
 
 
   return (
-    <FuegoProvider fuego={fuego}>
-      <ApolloProvider client={client}>
-        <FirebaseProvider>
-          <IconRegistry icons={[EvaIconsPack,MaterialIconsPack ]} />
-          <ApplicationProvider {...eva} theme={{ ...eva.light, ...theme }}>
-            <NavigationContainer>
-              <Routes />
-            </NavigationContainer>
-          </ApplicationProvider>
-        </FirebaseProvider>
-      </ApolloProvider>
-    </FuegoProvider>
+    <RecoilRoot>
+      <FuegoProvider fuego={fuego}>
+        <ApolloProvider client={client}>
+          <FirebaseProvider>
+            <IconRegistry icons={[EvaIconsPack, MaterialIconsPack]} />
+            <ApplicationProvider {...eva} theme={{ ...eva.light, ...theme }}>
+              <NavigationContainer>
+                <Routes />
+              </NavigationContainer>
+            </ApplicationProvider>
+          </FirebaseProvider>
+        </ApolloProvider>
+      </FuegoProvider>
+    </RecoilRoot>
 
   );
 }

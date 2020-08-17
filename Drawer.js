@@ -45,6 +45,8 @@ import {
 } from "@apollo/client";
 
 import { useCollection } from '@nandorojo/swr-firestore'
+import { useAuthState } from 'react-firebase-hooks/auth';
+// import { FirebaseContext } from './utils/firebase';
 
 const { Navigator, Screen } = createDrawerNavigator();
 
@@ -89,46 +91,129 @@ const GenderMenu = () => {
   );
 };
 
+const ChatRooms = () => {
+  const { data, update, error } = useCollection(`THREADS`)
+  console.log("Chat room rendered")
+  if (error) return <Text>Error On Loading chatroom!</Text>
+  if (!data) return <Text>Loading Chatroom...</Text>
+
+  console.log("Chat rooms reached ", data)
+  return <Text >Chat rooms here </Text>
+}
 
 const ChatUI = () => {
   const [messages, setMessages] = useState([]);
+  const firebase = React.useContext(FirebaseContext);
+  const [user, loading, error] = useAuthState(firebase.auth());
+  const currentUser = user.toJSON();
+
+  console.log("Chat UI user is here : ", user)
+  // const [messages, setMessages] = useState([]);
+  // const thread = "Room 1";  //this to be picked from somehwer amaizing
+
+  const [threads, setThreads] = useState(null);
+  const [thread, setThread] = useState(null);
+  // const [loading, setLoading] = useState(true);
+
+  /**
+   * Fetch threads from Firestore
+   */
+  useEffect(() => {
+    const unsubscribe = firebase.firestore()
+      .collection('THREADS')
+      // .orderBy('latestMessage.createdAt', 'desc')
+      .onSnapshot(querySnapshot => {
+        const threads = querySnapshot.docs.map(documentSnapshot => {
+          return {
+            _id: documentSnapshot.id,
+            // give defaults
+            name: '',
+            ...documentSnapshot.data()
+          };
+        });
+
+        console.log("Loadging all the threads here ", threads)
+        setThreads(threads);
+        setThread(threads[0]) //set as demo thread
+
+        if (loading) {
+          setLoading(false);
+        }
+      });
+
+    /**
+     * unsubscribe listener
+     */
+    return () => unsubscribe();
+  }, []);
+
+
+  async function handleSend(messages) {
+    const text = messages[0].text;
+
+    firebase.firestore()
+      .collection('THREADS')
+      .doc(thread._id)
+      .collection('MESSAGES')
+      .add({
+        text,
+        createdAt: new Date().getTime(),
+        user: {
+          _id: currentUser.uid,
+          email: currentUser.email
+        }
+      });
+
+    await firebase.firestore()
+      .collection('THREADS')
+      .doc(thread._id)
+      .set(
+        {
+          latestMessage: {
+            text,
+            user_id:currentUser.uid,
+            createdAt: new Date().getTime()
+          }
+        },
+        { merge: true }
+      );
+  }
 
   useEffect(() => {
-    setMessages([
-      {
-        _id: 1,
-        text: 'hello George, how are you feeling today',
-        createdAt: new Date(),
-        user: {
-          _id: 2,
-          name: 'Therapist One',
-        },
-      },
-      {
-        _id: 2,
-        text: 'not so good',
-        createdAt: new Date(),
-        user: {
-          _id: 1,
-          name: 'George Millanzi',
-        },
-      },
-      {
-        _id: 3,
-        text: 'can you tell me why you feeling so if you wont mind',
-        createdAt: new Date(),
-        user: {
-          _id: 2,
-          name: 'Therapist One',
-        },
-      }
+    if (threads) {
+      const messagesListener = firebase.firestore()
+        .collection('THREADS')
+        .doc(thread._id)
+        .collection('MESSAGES')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(querySnapshot => {
+          const messages = querySnapshot.docs.map(doc => {
+            const firebaseData = doc.data();
 
-    ])
-  }, [])
+            const data = {
+              _id: doc.id,
+              text: '',
+              createdAt: new Date().getTime(),
+              ...firebaseData
+            };
 
-  const onSend = useCallback((messages = []) => {
-    setMessages(previousMessages => GiftedChat.append(previousMessages, messages))
-  }, [])
+            if (!firebaseData.system) {
+              data.user = {
+                ...firebaseData.user,
+                name: firebaseData.user.email
+              };
+            }
+
+            return data;
+          });
+
+          setMessages(messages);
+        });
+
+      // Stop listening for updates whenever the component unmounts
+      return () => messagesListener();
+    }
+  }, [thread]);
 
   return (
     <View style={{
@@ -137,13 +222,21 @@ const ChatUI = () => {
     }}>
       <View style={{ paddingVertical: 8, paddingHorizontal: 12, backgroundColor: "#F0F0F0", }}>
         <Text>Active Sessions with {"Therapist One"}</Text>
+        <ChatRooms />
       </View>
       <GiftedChat
         messages={messages}
-        onSend={messages => onSend(messages)}
-        user={{
-          _id: 1,
-        }}
+        onSend={handleSend}
+        user={{ _id: currentUser.uid }}
+        placeholder='Type your message here...'
+        alwaysShowSend
+        showUserAvatar
+        scrollToBottom
+      // renderBubble={renderBubble}
+      // renderLoading={renderLoading}
+      // renderSend={renderSend}
+      // scrollToBottomComponent={scrollToBottomComponent}
+      // renderSystemMessage={renderSystemMessage}
       />
     </View>
   )
@@ -168,6 +261,7 @@ const ChatsScreen = () => {
       <ApplicationHeader title="Counseling" />
       <View style={styles.mainContainer}>
         <View style={styles.chatContainer}>
+        
           <View
             style={{
               flex: 2,
