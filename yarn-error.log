@@ -1,28 +1,21 @@
 Arguments: 
-  /usr/local/bin/node /Users/pro/.yarn/bin/yarn.js add swr
+  C:\Program Files\nodejs\node.exe C:\Program Files (x86)\Yarn\bin\yarn.js install
 
 PATH: 
-  .:/Users/pro/Library/Android/sdk/tools:/Users/pro/Library/Android/sdk/platform-tools:/Users/pro/.yarn/bin:/Users/pro/.config/yarn/global/node_modules/.bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/pro/opt/anaconda3/bin:/Users/pro/opt/anaconda3/condabin:.:/Users/pro/Library/Android/sdk/tools:/Users/pro/Library/Android/sdk/platform-tools:/Users/pro/.yarn/bin:/Users/pro/.config/yarn/global/node_modules/.bin
+  C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files (x86)\ATI Technologies\ATI.ACE\Core-Static;C:\Program Files (x86)\Yarn\bin\;C:\Users\GhmSec\AppData\Local\Microsoft\WindowsApps;C:\Users\GhmSec\AppData\Roaming\npm;C:\Users\GhmSec\AppData\Local\GitHubDesktop\bin;C:\Users\GhmSec\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\GhmSec\AppData\Local\Yarn\bin
 
 Yarn version: 
   1.22.4
 
 Node version: 
-  12.16.1
+  10.15.3
 
 Platform: 
-  darwin x64
+  win32 x64
 
 Trace: 
-  Error: connect ENETUNREACH 104.16.19.35:443 - Local (0.0.0.0:63080)
-      at internalConnect (net.js:917:16)
-      at defaultTriggerAsyncIdScope (internal/async_hooks.js:311:12)
-      at emitLookup (net.js:1059:9)
-      at /Users/pro/.yarn/lib/cli.js:107523:28
-      at /Users/pro/.yarn/lib/cli.js:107432:13
-      at RawTask.module.exports.RawTask.call (/Users/pro/.yarn/lib/cli.js:83613:19)
-      at flush (/Users/pro/.yarn/lib/cli.js:83695:29)
-      at processTicksAndRejections (internal/process/task_queues.js:79:11)
+  Error: read ECONNRESET
+      at TLSWrap.onStreamRead (internal/stream_base_commons.js:111:27)
 
 npm manifest: 
   {
@@ -78,7 +71,7 @@ npm manifest:
       "react-native-web": "~0.11.7",
       "react-responsive": "^8.1.0",
       "recoil": "^0.0.10",
-      "swr": "^0.3.0"
+      "swr":"^0.3.0"
     },
     "devDependencies": {
       "@babel/core": "^7.8.6",
@@ -13390,13 +13383,6 @@ Lockfile:
     version "0.2.3"
     resolved "https://registry.yarnpkg.com/swr/-/swr-0.2.3.tgz#e0fb260d27f12fafa2388312083368f45127480d"
     integrity sha512-JhuuD5ojqgjAQpZAhoPBd8Di0Mr1+ykByVKuRJdtKaxkUX/y8kMACWKkLgLQc8pcDOKEAnbIreNjU7HfqI9nHQ==
-    dependencies:
-      fast-deep-equal "2.0.1"
-  
-  swr@^0.3.0:
-    version "0.3.0"
-    resolved "https://registry.yarnpkg.com/swr/-/swr-0.3.0.tgz#69602953dd50ab07fe60c920fd63199256645675"
-    integrity sha512-3p0p5TWH0qiaKAph5wBkMwqe2WjNseITfjmdVoNzjqRZGn/gnpRi6whMDjhMVb/vp/yyDtKWPlyjid8QZH+UhA==
     dependencies:
       fast-deep-equal "2.0.1"
   
