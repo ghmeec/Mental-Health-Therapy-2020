@@ -19,11 +19,18 @@ import {
   Select,
   SelectItem,
   Calendar,
-  Datepicker
+  Datepicker,
+  Card,
+  Modal,
 } from "@ui-kitten/components";
 import { useMediaQuery } from "react-responsive";
 import { FirebaseContext } from "../../utils/firebase";
-import { View, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 
 import ApplicationHeader from "../../ApplicationHeader";
 import {
@@ -35,53 +42,43 @@ import {
 import styles from "../../styles";
 import { StyleSheet } from "react-native";
 import { TouchableWithoutFeedback } from "react-native";
-import LoginInformationEdit from '../../src/components/LoginInformationEdit'
-import PersonalInformationEdit from '../../src/components/PersonalInformationEdit'
-import CounselorTitle from '../components/CounselorTitle'
-import {
-  gql,
-  useQuery,
-  useMutation
-} from "@apollo/client";
+import LoginInformationEdit from "../../src/components/LoginInformationEdit";
+import PersonalInformationEdit from "../../src/components/PersonalInformationEdit";
+import CounselorTitle from "../components/CounselorTitle";
+import { gql, useQuery, useMutation } from "@apollo/client";
 
-import * as DocumentPicker from 'expo-document-picker';
-import { useCollection } from '@nandorojo/swr-firestore'
-import { useAuthState } from 'react-firebase-hooks/auth';
+import * as DocumentPicker from "expo-document-picker";
+import { useCollection } from "@nandorojo/swr-firestore";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { useDocument } from "@nandorojo/swr-firestore";
 // import { FirebaseContext } from "../../utils/firebase";
-import {
-  useRecoilState,
-  useRecoilValue,
-} from 'recoil';
+import { useRecoilState, useRecoilValue } from "recoil";
 import useSWR from "swr";
+import * as Location from "expo-location";
 
-import { messageState } from '../../App'
+import { messageState } from "../../App";
 
 const { Navigator, Screen } = createDrawerNavigator();
 
 const BirthDate = () => {
-
   const [date, setDate] = React.useState(new Date());
 
   return (
-    <Layout style={styles.container} level='1'>
-
+    <Layout style={styles.container} level="1">
       <Datepicker
-        label='BirthDate'
-        placeholder='Pick Date'
+        label="BirthDate"
+        placeholder="Pick Date"
         style={styles.inputContainer}
         date={date}
-        onSelect={nextDate => setDate(nextDate)}
-
+        onSelect={(nextDate) => setDate(nextDate)}
       />
-
     </Layout>
   );
 };
 
-
 const GenderMenu = () => {
   const [selectedIndex, setSelectedIndex] = React.useState();
-  const [data, setData] = React.useState(['', 'Male', 'Female']);
+  const [data, setData] = React.useState(["", "Male", "Female"]);
 
   return (
     <Layout style={styles.gendercontainer} level="1">
@@ -98,7 +95,6 @@ const GenderMenu = () => {
     </Layout>
   );
 };
-
 
 const ChatsScreen = () => {
   return (
@@ -139,20 +135,24 @@ const SettingIcon = (props) => <Icon {...props} name="settings-outline" />;
 const ApplicationIcon = (props) => <Icon {...props} name="book-outline" />;
 const NotebookIcon = (props) => <Icon {...props} name="book-open-outline" />;
 const ReviewIcon = (props) => <Icon {...props} name="layers-outline" />;
+
 const EditIcon = (props) => (
   <>
-    <TouchableOpacity onPress={() => {
-      console.log("Acquiring the user location")
-    }}>
-      <Icon {...props} name={"edit-outline"} style={{ width: 28, height: 28 }} />
+    <TouchableOpacity
+      onPress={() => {
+        console.log("Acquiring the user location");
+      }}
+    >
+      <Icon
+        {...props}
+        name={"edit-outline"}
+        style={{ width: 28, height: 28 }}
+      />
     </TouchableOpacity>
   </>
 );
 
-
-const CalendarIcon = (props) => (
-  <Icon {...props} name='calendar' />
-);
+const CalendarIcon = (props) => <Icon {...props} name="calendar" />;
 const HomeIcon = (props) => <Icon {...props} name="home-outline" />;
 
 const AccountScreen = () => {
@@ -191,13 +191,12 @@ const AccountScreen = () => {
       <ApplicationHeader title="Account" />
       <View style={styles.mainContainer}>
         <ScrollView style={{ height: "100%" }}>
-          <View style={[styles.contentContainer, { backgroundColor: "#E9E9EA" }]}>
-
+          <View
+            style={[styles.contentContainer, { backgroundColor: "#E9E9EA" }]}
+          >
             <LoginInformationEdit />
             <PersonalInformationEdit />
             <CounselorTitle />
-
-
           </View>
         </ScrollView>
       </View>
@@ -206,29 +205,199 @@ const AccountScreen = () => {
 };
 
 const GET_USER = gql`
-query GetUser{
-  users{
-    first_name
-    gender
-    id
-    date_of_birth
+  query GetUser {
+    users {
+      first_name
+      gender
+      id
+      date_of_birth
+    }
   }
-}
-`
-const HomeScreen = () => {
+`;
 
+const PendingPatientQutionares = () => {
+  const firebase = React.useContext(FirebaseContext);
+
+  const { data, error } = useCollection(`questionnaire`, {
+    where: ["isPatientAssignedToCounsellor", "==", false],
+  });
+
+  const [pendingTime, setPendingTime] = React.useState("");
+  const [visible, setVisible] = React.useState(false);
+
+  const [currentId, setCurrentId] = React.useState("");
+  const [loading, setLoading] = React.useState("");
+
+  //update the data for the patient quetionare
+
+  const { update, set } = useDocument(`questionnaire/${currentId}`, {
+    listen: true,
+  });
+
+  if (error) return <Text>Error!</Text>;
+  if (!data) return <Text>Loading...</Text>;
+
+  const elapsedTime = (time) => {
+    "use strict";
+    const since = time.toDate();
+    const elapsed = (new Date().getTime() - since) / 1000;
+
+    if (elapsed >= 0) {
+      const diff = {};
+
+      diff.days = Math.floor(elapsed / 86400);
+      diff.hours = Math.floor((elapsed / 3600) % 24);
+      diff.minutes = Math.floor((elapsed / 60) % 60);
+      diff.seconds = Math.floor(elapsed % 60);
+
+      let message = `Over ${diff.days}d ${diff.hours}h ${diff.minutes}m ${diff.seconds}s.`;
+      message = message.replace(/(?:0. )+/, "");
+      setPendingTime(message);
+      return message;
+    } else {
+      alert(
+        "Elapsed time lesser than 0, i.e. specified datetime is still in the future."
+      );
+      setPendingTime("");
+      return " ";
+    }
+  };
+
+  const assignTherapistPatient = async (patient) => {
+    console.log("Update of this item ", patient);
+    setLoading(true);
+    await update({
+      isPatientAssignedToCounsellor: true,
+      councelor: firebase.auth().currentUser.uid,
+    });
+    setLoading(false);
+    setVisible(false);
+  };
+
+  const PatientPending = ({ data }) => {
+    return (
+      <Card
+        style={{
+          maxHeight: 200,
+          maxWidth: 300,
+          padding: 4,
+        }}
+      >
+        <Text>ID : {data.id}</Text>
+        <Text>Requested : {elapsedTime(data.createdAt)} ago</Text>
+        <View>
+          <TouchableOpacity
+            onPress={() => {
+              setCurrentId(data.patient);
+              setVisible(true);
+            }}
+          >
+            <Text style={{ color: "blue" }}>View Details</Text>
+          </TouchableOpacity>
+
+          <Modal
+            visible={visible}
+            backdropStyle={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+            onBackdropPress={() => setVisible(false)}
+          >
+            <View style={{ width: 380 }}>
+              <Card disabled={true}>
+                <Text>Age : {data.questionnaireResults.age}</Text>
+                <Text>Chronic Pain : {data.questionnaireResults.chronic}</Text>
+                <Text>
+                  financial status : {data.questionnaireResults.financial}
+                </Text>
+                <Text>Gender : {data.questionnaireResults.gender}</Text>
+                <Text>
+                  Considered to be Religious :{" "}
+                  {data.questionnaireResults.religious}
+                </Text>
+                <Text>
+                  Taking Any Medication : {data.questionnaireResults.medication}
+                </Text>
+                <Text>
+                  Prefered Language : {data.questionnaireResults.language}
+                </Text>
+                <Text>
+                  Experiencing Panic Attacks : {data.questionnaireResults.panic}
+                </Text>
+                <Text>
+                  Relationship status : {data.questionnaireResults.relationship}
+                </Text>
+                <Text>
+                  Sleeping habit : {data.questionnaireResults.sleeping}
+                </Text>
+                <Text>
+                  Suicidal thoughts : {data.questionnaireResults.suicide}
+                </Text>
+                <Text>
+                  Had therapy before : {data.questionnaireResults.therapy}
+                </Text>
+
+                <Button
+                  onPress={() => assignTherapistPatient()}
+                  style={{
+                    marginVertical: 20,
+                  }}
+                >
+                  Accept Patient
+                </Button>
+              </Card>
+            </View>
+          </Modal>
+        </View>
+      </Card>
+    );
+  };
+
+  return (
+    <View style={{ marginVertical: 24 }}>
+      {data.length == 0 && (
+        <Text style={{ fontSize: 18, fontWeight: "500" }}>
+          No Pending Patient
+        </Text>
+      )}
+
+      {data.map((item, index) => (
+        <View>
+          <Text
+            category="h4"
+            style={{ fontSize: 18, fontWeight: "500", marginBottom: 12 }}
+          >
+            Pending Patients
+          </Text>
+          <PatientPending data={item} key={index} />
+        </View>
+      ))}
+    </View>
+  );
+};
+
+const WelcomeUser = () => {
+  const firebase = React.useContext(FirebaseContext);
+  const userName = firebase.auth().currentUser.displayName;
+  return (
+    <Text style={{ fontSize: 18, fontWeight: "500" }}>Welcome {userName}</Text>
+  );
+};
+
+const HomeScreen = () => {
+  const firebase = React.useContext(FirebaseContext);
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
   const isBig = useMediaQuery({
     minWidth: 768,
   });
-  const { loading, error, data } = useQuery(GET_USER);
+  const { data, update, set, error } = useDocument(
+    `therapist/${firebase.auth().currentUser.uid}`,
+    { listen: true }
+  );
 
   const BackIcon = (props) => <Icon {...props} name="menu-outline" />;
 
   const goToMyApplicationPage = () => {
-    navigation.navigate('MyApplication')
-  }
+    navigation.navigate("MyApplication");
+  };
   const renderBackAction = () => (
     <TopNavigationAction
       icon={BackIcon}
@@ -240,7 +409,8 @@ const HomeScreen = () => {
       }}
     />
   );
-  console.log("error : ", error)
+  // console.log("Debug acceptance : ", data.isVerified);
+
   return (
     <Layout
       style={{
@@ -251,40 +421,78 @@ const HomeScreen = () => {
       <ApplicationHeader title="Home" />
       <View style={styles.mainContainer}>
         <View style={styles.contentContainer}>
-          <View style={[styles.dashBoardContentContainer, { padding: 12 }]}>
-            <Text status='warning'>Your Profile Is Not Complete</Text>
-            <Text>Hello George, Please complete your profile to start providing therapy service </Text>
-            <Text>Tips and How tos Here</Text>
-            <Button onPress={goToMyApplicationPage}
-              style={{
-                marginTop: 8,
-                width: 300
-              }}
-            >
-              Go to My Application
-            </Button>
+          <View style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
+            <ScrollView>
+              {error && <Text>Error while fetching the details</Text>}
+              {!data && (
+                <View style={{ marginTop: 32 }}>
+                  <ActivityIndicator size={"large"} />
+                </View>
+              )}
+              {data && (
+                <View>
+                  <View
+                    style={[
+                      styles.dashBoardContentContainer,
+                      { padding: 12, marginTop: 12 },
+                    ]}
+                  >
+                    <WelcomeUser />
+                  </View>
+
+                  {data.isVerified ? (
+                    <View
+                      style={[
+                        styles.dashBoardContentContainer,
+                        { padding: 12, marginTop: 12 },
+                      ]}
+                    >
+                      <Text status="success">Application Accepted</Text>
+                      <Text>
+                        Hello ,your application is approved and you are ready to
+                        start offering councelling service
+                      </Text>
+
+                      <PendingPatientQutionares />
+                    </View>
+                  ) : (
+                    <View
+                      style={[
+                        styles.dashBoardContentContainer,
+                        { padding: 12 },
+                      ]}
+                    >
+                      <Text status="danger">
+                        Your application is rejected !
+                      </Text>
+                      <Text>
+                        Please refer to following message to save a chance and
+                        to be accepted.
+                      </Text>
+                      <Text>{data.message}</Text>
+                      <Text>Tips and How tos Here</Text>
+                      <Button
+                        onPress={goToMyApplicationPage}
+                        style={{
+                          marginTop: 8,
+                          width: 300,
+                        }}
+                      >
+                        Edit My Application
+                      </Button>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              <View
+                style={[
+                  styles.dashBoardContentContainer,
+                  { padding: 12, marginTop: 12 },
+                ]}
+              ></View>
+            </ScrollView>
           </View>
-
-
-          <View style={[styles.dashBoardContentContainer, { padding: 12, marginTop: 12 }]}>
-            <Text status='danger'>Application Rejected</Text>
-            <Text>Hello George, Looks like your application has been rejected </Text>
-            <Text>Please review and submit the appropriate information</Text>
-            <Button onPress={goToMyApplicationPage}
-              style={{
-                marginTop: 8,
-                width: 300
-              }}
-            >
-              Edit informations
-            </Button>
-          </View>
-
-          <View style={[styles.dashBoardContentContainer, { padding: 12, marginTop: 12 }]}>
-            <Text>Other content here</Text>
-          </View>
-
-
         </View>
       </View>
     </Layout>
@@ -298,7 +506,7 @@ const ChatUI = () => {
   const currentUser = user.toJSON();
   const [text, setText] = useRecoilState(messageState);
 
-  console.log("Chat UI user is here : ", user)
+  console.log("Chat UI user is here : ", user);
   // const [messages, setMessages] = useState([]);
   // const thread = "Room 1";  //this to be picked from somehwer amaizing
 
@@ -310,22 +518,23 @@ const ChatUI = () => {
    * Fetch threads from Firestore
    */
   useEffect(() => {
-    const unsubscribe = firebase.firestore()
-      .collection('THREADS')
+    const unsubscribe = firebase
+      .firestore()
+      .collection("THREADS")
       // .orderBy('latestMessage.createdAt', 'desc')
-      .onSnapshot(querySnapshot => {
-        const threads = querySnapshot.docs.map(documentSnapshot => {
+      .onSnapshot((querySnapshot) => {
+        const threads = querySnapshot.docs.map((documentSnapshot) => {
           return {
             _id: documentSnapshot.id,
             // give defaults
-            name: '',
-            ...documentSnapshot.data()
+            name: "",
+            ...documentSnapshot.data(),
           };
         });
 
-        console.log("Loadging all the threads here ", threads)
+        console.log("Loadging all the threads here ", threads);
         setThreads(threads);
-        setThread(threads[0]) //set as demo thread
+        setThread(threads[0]); //set as demo thread
 
         if (loading) {
           setLoading(false);
@@ -338,33 +547,34 @@ const ChatUI = () => {
     return () => unsubscribe();
   }, []);
 
-
   async function handleSend(messages) {
     const text = messages[0].text;
 
-    firebase.firestore()
-      .collection('THREADS')
+    firebase
+      .firestore()
+      .collection("THREADS")
       .doc(thread._id)
-      .collection('MESSAGES')
+      .collection("MESSAGES")
       .add({
         text,
         createdAt: new Date().getTime(),
         user: {
           _id: currentUser.uid,
-          email: currentUser.email
-        }
+          email: currentUser.email,
+        },
       });
 
-    await firebase.firestore()
-      .collection('THREADS')
+    await firebase
+      .firestore()
+      .collection("THREADS")
       .doc(thread._id)
       .set(
         {
           latestMessage: {
             text,
             user_id: currentUser.uid,
-            createdAt: new Date().getTime()
-          }
+            createdAt: new Date().getTime(),
+          },
         },
         { merge: true }
       );
@@ -372,32 +582,33 @@ const ChatUI = () => {
 
   useEffect(() => {
     if (threads) {
-      const messagesListener = firebase.firestore()
-        .collection('THREADS')
+      const messagesListener = firebase
+        .firestore()
+        .collection("THREADS")
         .doc(thread._id)
-        .collection('MESSAGES')
-        .orderBy('createdAt', 'desc')
-        .onSnapshot(querySnapshot => {
-          const messages = querySnapshot.docs.map(doc => {
+        .collection("MESSAGES")
+        .orderBy("createdAt", "desc")
+        .onSnapshot((querySnapshot) => {
+          const messages = querySnapshot.docs.map((doc) => {
             const firebaseData = doc.data();
 
             const data = {
               _id: doc.id,
-              text: '',
+              text: "",
               createdAt: new Date().getTime(),
-              ...firebaseData
+              ...firebaseData,
             };
 
             if (!firebaseData.system) {
               data.user = {
                 ...firebaseData.user,
-                name: firebaseData.user.email
+                name: firebaseData.user.email,
               };
             }
 
             return data;
           });
-          setText(messages[0])
+          setText(messages[0]);
           setMessages(messages);
         });
 
@@ -407,11 +618,19 @@ const ChatUI = () => {
   }, [thread]);
 
   return (
-    <View style={{
-      flex: 1,
-      backgroundColor: "#FCFCFC"
-    }}>
-      <View style={{ paddingVertical: 8, paddingHorizontal: 12, backgroundColor: "#F0F0F0", }}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#FCFCFC",
+      }}
+    >
+      <View
+        style={{
+          paddingVertical: 8,
+          paddingHorizontal: 12,
+          backgroundColor: "#F0F0F0",
+        }}
+      >
         <Text>Active Session with Patient {"Patient One"}</Text>
         {/* <ChatRooms /> */}
       </View>
@@ -419,42 +638,47 @@ const ChatUI = () => {
         messages={messages}
         onSend={handleSend}
         user={{ _id: currentUser.uid }}
-        placeholder='Type your message here...'
+        placeholder="Type your message here..."
         alwaysShowSend
         showUserAvatar
         scrollToBottom
-      // renderBubble={renderBubble}
-      // renderLoading={renderLoading}
-      // renderSend={renderSend}
-      // scrollToBottomComponent={scrollToBottomComponent}
-      // renderSystemMessage={renderSystemMessage}
+        // renderBubble={renderBubble}
+        // renderLoading={renderLoading}
+        // renderSend={renderSend}
+        // scrollToBottomComponent={scrollToBottomComponent}
+        // renderSystemMessage={renderSystemMessage}
       />
     </View>
-  )
-}
+  );
+};
 
-const fetcher = url => fetch(url).then(res => res.json());
-
+const fetcher = (url) => fetch(url).then((res) => res.json());
 
 const TextAnalysis = () => {
   const [text, setText] = useRecoilState(messageState);
-  console.log("Recived text is here ", text)
-  const { data, error } = useSWR(text ?
-    text.text == "" ? null :
-      `https://mental-health-2020.herokuapp.com/predict?msg=${text.text}` : null,
+  console.log("Recived text is here ", text);
+  const { data, error } = useSWR(
+    text
+      ? text.text == ""
+        ? null
+        : `https://mental-health-2020.herokuapp.com/predict?msg=${text.text}`
+      : null,
     fetcher
   );
 
-
   if (error) return <Text>An error has occurred. {JSON.stringify(error)}</Text>;
-  if (!data) return <Text>Analysing the last message ...</Text>
+  if (!data) return <Text>Analysing the last message ...</Text>;
 
   return (
-    <Text>The Patient potentially is dealing with <Text style={{ color: "red" }}>{(data.sentiment)}</Text></Text>
-  )
-}
+    <View style={{ marginVertical: 24 }}>
+      <Text style={{ fontSize: 18 }}>
+        The Patient potentially is dealing with{" "}
+        <Text style={{ fontSize: 18, color: "#0771EC" }}>{data.sentiment}</Text>
+      </Text>
+    </View>
+  );
+};
 const CounsellingScreen = () => {
-
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
   const isBig = useMediaQuery({
@@ -485,15 +709,16 @@ const CounsellingScreen = () => {
       <ApplicationHeader title="Counselling" />
       <View style={styles.mainContainer}>
         <View style={styles.contentContainer}>
-          <View style={{
-            flex: 1,
-            flexDirection: "row",
-          }}>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+            }}
+          >
             <View
               style={{
                 flex: 2,
                 paddingHorizontal: 12,
-
               }}
             >
               <ChatUI />
@@ -503,41 +728,111 @@ const CounsellingScreen = () => {
               style={{
                 flex: 1,
                 paddingHorizontal: 12,
-                backgroundColor: "#FFFFFF"
-
+                backgroundColor: "#FFFFFF",
               }}
             >
-              <View style={{ marginHorizontal: -12, paddingVertical: 8, paddingHorizontal: 12, backgroundColor: "#F0F0F0", }}>
+              <View
+                style={{
+                  marginHorizontal: -12,
+                  paddingVertical: 8,
+                  paddingHorizontal: 12,
+                  backgroundColor: "#F0F0F0",
+                }}
+              >
                 <Text>Message Analysis Tool</Text>
               </View>
               <TextAnalysis />
-
             </View>
-
-
           </View>
-
-
         </View>
       </View>
     </Layout>
   );
 };
 
-
 const MyApplicationScreen = () => {
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  const firebase = React.useContext(FirebaseContext);
+
+  const { data: therapist, update, error, set } = useDocument(
+    `therapist/${firebase.auth().currentUser.uid}`,
+    {
+      listen: true,
+    }
+  );
+
+  const { data: user } = useCollection(`users`, {
+    where: ["uid", "==", firebase.auth().currentUser.uid],
+    limit: 1,
+  });
+
+  const getLocation = async () => {
+    let { status } = await Location.requestPermissionsAsync();
+    if (status !== "granted") {
+      alert("You must accept the permission to continue");
+      setErrorMsg("Permission to access location was denied");
+    }
+
+    let location = await Location.getCurrentPositionAsync({});
+    setstate({ ...state, geoLocation: JSON.stringify(location) });
+  };
+
+  useEffect(() => {
+    getLocation();
+  });
+
+  const updateMyAppllication = () => {
+    set({
+      id: firebase.auth().currentUser.uid,
+      isVerified: false,
+      status: "",
+      createdAt: new Date(),
+      application: {
+        ...state,
+      },
+    });
+    alert("Your application is submitted");
+  };
+  // let text = "Waiting..";
+  // if (errorMsg) {
+  //   text = errorMsg;
+  // } else if (location) {
+  //   text = JSON.stringify(location);
+  // }
+
+  console.log("some data ", user);
+  // const firstName=
+  // const lastName=
 
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
   const isBig = useMediaQuery({
     minWidth: 768,
   });
+  const [state, setstate] = React.useState({
+    firstName: user[0].first_name,
+    lastName: user[0].last_name,
+    gender: "",
+    birthDate: "",
+    date: "",
+    email: "",
+    phone: "",
+    geoLocation: "",
+    qualificationTitle: "",
+    qualificatinDescription: "",
+    // experienceDescription: "",
+    // experienceReview: "",
+  });
 
   const [date, setDate] = React.useState(new Date());
   const options = {
     type: "*/*",
-    copyToCacheDirectory: true
-  }
+    copyToCacheDirectory: true,
+  };
+  const [selectedIndex, setSelectedIndex] = React.useState();
+  const [genderOptions] = React.useState(["", "Male", "Female"]);
 
   const BackIcon = (props) => <Icon {...props} name="menu-outline" />;
 
@@ -564,176 +859,210 @@ const MyApplicationScreen = () => {
       <View style={styles.mainContainer}>
         <ScrollView style={{ height: "100%" }}>
           <View style={styles.contentContainer}>
-            <View style={[styles.dashBoardContentContainer, { padding: 12, marginTop: 12 }]}>
-              <Text category='h6'>Personal Details</Text>
+            <View
+              style={[
+                styles.dashBoardContentContainer,
+                { paddingHorizontal: 36, paddingVertical: 28, marginTop: 12 },
+              ]}
+            >
+              <Text category="h6">Personal Details</Text>
               <Input
-                // value={value}
-                label='First Name'
-                placeholder='George'
-              // caption='Should contain at least 8 symbols'
-              // accessoryRight={renderIcon}
-              // captionIcon={AlertIcon}
-              // secureTextEntry={secureTextEntry}
-              // onChangeText={nextValue => setValue(nextValue)}
+                value={state.firstName}
+                label="First Name"
+                placeholder="George"
+                // caption='Should contain at least 8 symbols'
+                // accessoryRight={renderIcon}
+                // captionIcon={AlertIcon}
+                // secureTextEntry={secureTextEntry}
+                onChangeText={(nextValue) =>
+                  setstate({ ...state, firstName: nextValue })
+                }
               />
 
               <Input
-                // value={value}
-                label='Last Name'
-                placeholder='Millanzi'
-              // caption='Should contain at least 8 symbols'
-              // accessoryRight={renderIcon}
-              // captionIcon={AlertIcon}
-              // secureTextEntry={secureTextEntry}
-              // onChangeText={nextValue => setValue(nextValue)}
+                value={state.lastName}
+                label="Last Name"
+                placeholder="Millanzi"
+                // caption='Should contain at least 8 symbols'
+                // accessoryRight={renderIcon}
+                // captionIcon={AlertIcon}
+                // secureTextEntry={secureTextEntry}
+                onChangeText={(nextValue) =>
+                  setstate({ ...state, lastName: nextValue })
+                }
               />
 
               <Select
+                selectedIndex={selectedIndex}
+                onSelect={(index) => setSelectedIndex(index)}
+                style={styles.inputContainer}
                 // selectedIndex={selectedIndex}
-                // onSelect={index => setSelectedIndex(index)}
+                onSelect={(index) => {
+                  setSelectedIndex(index);
+                  setstate({ ...state, gender: genderOptions[index] });
+                }}
+                value={genderOptions[selectedIndex]}
                 label="Gender"
               >
-                <SelectItem title='Male' />
-                <SelectItem title='Female' />
+                <SelectItem title="Male" />
+                <SelectItem title="Female" />
               </Select>
 
               <Datepicker
-                label='Birth Info'
-                placeholder='Pick Date'
-                date={date}
-                onSelect={nextDate => setDate(nextDate)}
+                label="Date of Birth"
+                placeholder="Pick Date"
+                date={state.birthDate}
+                onSelect={(nextDate) =>
+                  setstate({ ...state, birthDate: nextDate })
+                }
                 accessoryRight={CalendarIcon}
               />
-
             </View>
 
-
-            <View style={[styles.dashBoardContentContainer, { padding: 12, marginTop: 12 }]}>
-              <Text category='h6'>Address information</Text>
+            <View
+              style={[
+                styles.dashBoardContentContainer,
+                { paddingHorizontal: 36, paddingVertical: 28, marginTop: 12 },
+              ]}
+            >
+              <Text category="h6">Address information</Text>
               <Input
-                // value={value}
-                label='Email'
-                placeholder='georgemillaniz1234@gmail.com'
-              // caption='Should contain at least 8 symbols'
-              // accessoryRight={renderIcon}
-              // captionIcon={AlertIcon}
-              // secureTextEntry={secureTextEntry}
-              // onChangeText={nextValue => setValue(nextValue)}
-              />
-
-              <Input
-                // value={value}
-                label='Phone'
-                placeholder='0733527783'
-              // caption='Should contain at least 8 symbols'
-              // accessoryRight={renderIcon}
-              // captionIcon={AlertIcon}
-              // secureTextEntry={secureTextEntry}
-              // onChangeText={nextValue => setValue(nextValue)}
-              />
-
-              <Input
-                // value={value}
-                disabled={true}
-                label='Geo Location'
-                placeholder='2.343424,3.234234423'
+                value={state.email}
+                label="Email"
+                placeholder="georgemillaniz1234@gmail.com"
                 // caption='Should contain at least 8 symbols'
-                accessoryRight={EditIcon}
-              // captionIcon={AlertIcon}
-              // secureTextEntry={secureTextEntry}
-              // onChangeText={nextValue => setValue(nextValue)}
+                // accessoryRight={renderIcon}
+                // captionIcon={AlertIcon}
+                // secureTextEntry={secureTextEntry}
+                onChangeText={(nextValue) =>
+                  setstate({ ...state, email: nextValue })
+                }
               />
 
-              <Select
-                label="Region"
-              // selectedIndex={selectedIndex}
-              // onSelect={(index) => setSelectedIndex(index)}
-              // value={data[selectedIndex]}
-              >
-                <SelectItem title="Dar Es Salaam" />
-                <SelectItem title="Mbeya" />
-              </Select>
+              <Input
+                value={state.phone}
+                label="Phone"
+                placeholder="0733527783"
+                // caption='Should contain at least 8 symbols'
+                // accessoryRight={renderIcon}
+                // captionIcon={AlertIcon}
+                // secureTextEntry={secureTextEntry}
+                onChangeText={(nextValue) =>
+                  setstate({ ...state, phone: nextValue })
+                }
+              />
 
-
+              <Input
+                value={state.geoLocation}
+                disabled={true}
+                label="Geo Location"
+                placeholder="2.343424,3.234234423"
+                // caption='Should contain at least 8 symbols'
+                // accessoryRight={EditIcon}
+                // captionIcon={AlertIcon}
+                // secureTextEntry={secureTextEntry}
+                // onChangeText={nextValue => setValue(nextValue)}
+              />
             </View>
 
-            <View style={[styles.dashBoardContentContainer, { padding: 12, marginTop: 12 }]}>
-              <Text category='h6'>Professional Qualification</Text>
+            <View
+              style={[
+                styles.dashBoardContentContainer,
+                { paddingHorizontal: 36, paddingVertical: 28, marginTop: 12 },
+              ]}
+            >
+              <Text category="h6">Professional Qualification</Text>
 
               <Select
                 label="Qualification Title"
-              // selectedIndex={selectedIndex}
-              // onSelect={(index) => setSelectedIndex(index)}
-              // value={data[selectedIndex]}
+                // selectedIndex={selectedIndex}
+                // onSelect={(index) => setSelectedIndex(index)}
+                // value={data[selectedIndex]}
               >
-                <SelectItem title="Bsc IN Therapy" />
-                <SelectItem title="Masters In Therapy" />
+                <SelectItem title="Physician" />
+                <SelectItem title="Psychologist" />
+                <SelectItem title="Psychiatrist" />
+                <SelectItem title="Social Worker" />
               </Select>
 
               <Input
                 // value={value}
-                label='Qualificatin Description'
-                placeholder='text'
-              // caption='Should contain at least 8 symbols'
-              // accessoryRight={renderIcon}
-              // captionIcon={AlertIcon}
-              // secureTextEntry={secureTextEntry}
-              // onChangeText={nextValue => setValue(nextValue)}
+                label="Qualificatin Description"
+                placeholder="text"
+                // caption='Should contain at least 8 symbols'
+                // accessoryRight={renderIcon}
+                // captionIcon={AlertIcon}
+                // secureTextEntry={secureTextEntry}
+                onChangeText={(nextValue) =>
+                  setstate({ ...state, qualificatinDescription: nextValue })
+                }
               />
 
               <Button
-
                 onPress={() => {
                   DocumentPicker.getDocumentAsync(options)
-                    .then(
-                      res => {
-                        console.log(" Ther results are here : ")
-                      }
-                    )
-                    .catch(error => {
-                      console.log("Error in file upload : ", error)
+                    .then((res) => {
+                      console.log(" Ther results are here : ");
                     })
-                }
-                }
+                    .catch((error) => {
+                      console.log("Error in file upload : ", error);
+                    });
+                }}
                 style={{
-                  // width: 100,
-                  marginTop: 12
+                  //  width: 100,
+                  marginTop: 12,
                 }}
               >
                 Add support documents
               </Button>
-
-
-
             </View>
 
-
-            <View style={[styles.dashBoardContentContainer, { padding: 12, marginTop: 12 }]}>
-              <Text category='h6'>Working experience</Text>
+            {/* <View
+              style={[
+                styles.dashBoardContentContainer,
+                { paddingHorizontal: 36, paddingVertical: 28, marginTop: 12 },
+              ]}
+            >
+              <Text category="h6">Working experience</Text>
               <Input
                 // value={value}
-                label='Experience Description'
-                placeholder='Year'
-
+                label="Experience Description"
+                placeholder="Year"
               />
-              <Select
-                label="Experience Review"
-
-              >
+              <Select label="Experience Review">
                 <SelectItem title="Articles" />
                 <SelectItem title="Books" />
-
               </Select>
+            </View> */}
+
+            <View
+              style={[
+                styles.dashBoardContentContainer,
+                { paddingHorizontal: 36, paddingVertical: 28, marginTop: 12 },
+              ]}
+            >
+              <Button
+                onPress={() => {
+                  // DocumentPicker.getDocumentAsync(options)
+                  //   .then((res) => {
+                  console.log(" data successful loaded : ", state);
+                  updateMyAppllication();
+                }}
+                style={{
+                  //width: 100,
+                  marginTop: 12,
+                }}
+              >
+                Submit
+              </Button>
             </View>
-
-
-
           </View>
         </ScrollView>
       </View>
     </Layout>
   );
 };
+
 const NotebookScreen = () => {
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
@@ -769,8 +1098,7 @@ const NotebookScreen = () => {
       </View>
     </Layout>
   );
-
-}
+};
 const ReviewScreen = () => {
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
@@ -806,8 +1134,7 @@ const ReviewScreen = () => {
       </View>
     </Layout>
   );
-
-}
+};
 
 //  everything is not firebase
 
@@ -862,7 +1189,7 @@ const Header = (props) => (
           fontSize: 18,
         }}
       >
-        Logo
+        e-Therapy Platform
       </Text>
     </View>
     <Divider />
@@ -892,18 +1219,15 @@ const Footer = (props) => {
     <React.Fragment>
       <View
         style={{
-
           height: 60,
         }}
       >
-
         <Divider />
         <DrawerItem
           title={loading ? "Logging out..." : "Logout"}
           onPress={handleLogout}
           accessoryLeft={LogoutIcon}
           style={styles.drawerItem}
-
         />
       </View>
     </React.Fragment>
@@ -942,15 +1266,15 @@ const DrawerContent = ({ navigation, state }) => (
       style={styles.drawerItem}
     />
     <DrawerItem
-      title="Notebook"
+      title="Notebooks"
       accessoryLeft={NotebookIcon}
       style={styles.drawerItem}
     />
-    <DrawerItem
+    {/* <DrawerItem
       title="Review"
       accessoryLeft={ReviewIcon}
       style={styles.drawerItem}
-    />
+    /> */}
   </Drawer>
 );
 
@@ -974,22 +1298,29 @@ export const DrawerNavigator = () => {
       <Screen name="Home" component={HomeScreen} />
       <Screen name="Counselling" component={CounsellingScreen} />
       <Screen name="MyApplication" component={MyApplicationScreen} />
-      <Screen name="Notebook" component={NotebookScreen} />
+      <Screen name="Notebooks" component={NotebookScreen} />
       <Screen name="Review" component={ReviewScreen} />
     </Navigator>
   );
 };
 
 const TherapistMainContainer = () => {
-  const [isProfileCOmplete, setIsProfileComplete] = React.useState(true)
+  const [isProfileCOmplete, setIsProfileComplete] = React.useState(true);
   if (isProfileCOmplete) {
-    return (
-      <DrawerNavigator />
-    )
-
+    return <DrawerNavigator />;
   } else {
     return (
-      <View style={[{ flex: 1, justifyContent: "center", alignItems: "center", alignContent: "center" }, styles.contentContainer]}>
+      <View
+        style={[
+          {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            alignContent: "center",
+          },
+          styles.contentContainer,
+        ]}
+      >
         <View style={{ backgroundColor: "white", width: "80%", padding: 12 }}>
           <View style={{ backgroundColor: "red", height: 80 }}>
             <Text style={{ textAlign: "center" }}>Logo Here</Text>
@@ -997,7 +1328,7 @@ const TherapistMainContainer = () => {
           <Text>About to complete the profile</Text>
         </View>
       </View>
-    )
+    );
   }
 };
 

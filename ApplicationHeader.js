@@ -14,7 +14,7 @@ import {
 import styles from './styles'
 
 
-const Header = ({ title }) => {
+const Header = (props) => {
     const navigation = useNavigation();
     const isBig = useMediaQuery({
         minWidth: 768,
@@ -39,9 +39,10 @@ const Header = ({ title }) => {
         <>
             <TopNavigation
                 title={evaProps => <Text {...evaProps}
-                >{title?title:""}</Text>}
+                >{props.title?props.title:""}</Text>}
                 accessoryLeft={(!isBig) && renderBackAction}
                 style={styles.header}
+                {...props}
 
             />
             {/* <Divider /> */}
