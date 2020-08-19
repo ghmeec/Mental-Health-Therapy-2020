@@ -21,11 +21,11 @@ import {
   Calendar,
   Datepicker,
   List,
-  ListItem
+  ListItem,
 } from "@ui-kitten/components";
 import { useMediaQuery } from "react-responsive";
 import { FirebaseContext } from "../../utils/firebase";
-import { View, ScrollView, Dimensions } from "react-native";
+import { View, ScrollView, Dimensions, ActivityIndicator } from "react-native";
 
 import ApplicationHeader from "../../ApplicationHeader";
 import {
@@ -35,20 +35,24 @@ import {
   Send,
 } from "react-native-gifted-chat";
 import styles from "../../styles";
-import { StyleSheet } from "react-native";
+import { StyleSheet, TouchableOpacity } from "react-native";
 import { TouchableWithoutFeedback } from "react-native";
-import LoginInformationEdit from '../../src/components/LoginInformationEdit'
-import PersonalInformationEdit from '../../src/components/PersonalInformationEdit'
-import CounselorTitle from '../components/CounselorTitle'
+import LoginInformationEdit from "../../src/components/LoginInformationEdit";
+import PersonalInformationEdit from "../../src/components/PersonalInformationEdit";
+import CounselorTitle from "../components/CounselorTitle";
+import { gql, useQuery, useMutation } from "@apollo/client";
+import { BarChart, PieChart } from "react-native-chart-kit";
 import {
-  gql,
-  useQuery,
-  useMutation
-} from "@apollo/client";
-import {
-  BarChart,
-  PieChart
-} from "react-native-chart-kit";
+  Table,
+  TableWrapper,
+  Row,
+  Rows,
+  Col,
+  Cols,
+  Cell,
+} from "react-native-table-component";
+import { useCollection, useDocument } from "@nandorojo/swr-firestore";
+import { createStackNavigator } from "@react-navigation/stack";
 
 const chartConfig = {
   backgroundGradientFrom: "#1E2923",
@@ -61,7 +65,7 @@ const chartConfig = {
   color: (opacity = 1) => `#F3F3F3`,
   strokeWidth: 2, // optional, default 3
   barPercentage: 1,
-  useShadowColorFromDataset: false // optional
+  useShadowColorFromDataset: false, // optional
 };
 
 const screenWidth = 370;
@@ -70,9 +74,9 @@ const datas = {
   labels: ["January", "February", "March", "April", "May", "June"],
   datasets: [
     {
-      data: [20, 45, 28, 80, 99, 43]
-    }
-  ]
+      data: [20, 45, 28, 80, 99, 43],
+    },
+  ],
 };
 
 const dataPie = [
@@ -81,63 +85,58 @@ const dataPie = [
     population: 21500000,
     color: "rgba(131, 167, 234, 1)",
     legendFontColor: "#7F7F7F",
-    legendFontSize: 15
+    legendFontSize: 15,
   },
   {
     name: "Depression",
     population: 2800000,
     color: "#F00",
     legendFontColor: "#7F7F7F",
-    legendFontSize: 15
+    legendFontSize: 15,
   },
   {
     name: "Suicide Risk",
     population: 527612,
     color: "red",
     legendFontColor: "#7F7F7F",
-    legendFontSize: 15
+    legendFontSize: 15,
   },
   {
     name: "Alcohol",
     population: 8538000,
     color: "#ffffff",
     legendFontColor: "#7F7F7F",
-    legendFontSize: 15
+    legendFontSize: 15,
   },
   {
     name: "Stress",
     population: 11920000,
     color: "rgb(0, 0, 255)",
     legendFontColor: "#7F7F7F",
-    legendFontSize: 15
-  }
+    legendFontSize: 15,
+  },
 ];
 const { Navigator, Screen } = createDrawerNavigator();
 
 const BirthDate = () => {
-
   const [date, setDate] = React.useState(new Date());
 
   return (
-    <Layout style={styles.container} level='1'>
-
+    <Layout style={styles.container} level="1">
       <Datepicker
-        label='BirthDate'
-        placeholder='Pick Date'
+        label="BirthDate"
+        placeholder="Pick Date"
         style={styles.inputContainer}
         date={date}
-        onSelect={nextDate => setDate(nextDate)}
-
+        onSelect={(nextDate) => setDate(nextDate)}
       />
-
     </Layout>
   );
 };
 
-
 const GenderMenu = () => {
   const [selectedIndex, setSelectedIndex] = React.useState();
-  const [data, setData] = React.useState(['', 'Male', 'Female']);
+  const [data, setData] = React.useState(["", "Male", "Female"]);
 
   return (
     <Layout style={styles.gendercontainer} level="1">
@@ -236,12 +235,262 @@ const TherapistsScreen = () => {
       <ApplicationHeader title="Therapists" />
       <View style={styles.mainContainer}>
         <View style={styles.chatContainer}>
-
+          <Therapists />
         </View>
       </View>
     </Layout>
   );
 };
+
+const TherapistDetails = ({ route }) => {
+  const navigation = useNavigation();
+  const BackIcon = (props) => <Icon {...props} name="arrow-back" />;
+  let { therapist } = route.params;
+
+  // therapist=JSON.parse(therapist)
+
+  const state = {
+    tableHead: ["Info", " Value"],
+  };
+
+  const [therapist2, setTherapist2] = React.useState(JSON.parse(therapist));
+  const [comment, setComment] = React.useState("");
+  const {
+    data: therapistOnlineData,
+    update,
+    set,
+  } = useDocument(`therapist/${therapist2.id}`, { listen: true });
+
+  console.log("therapists details ", therapist2);
+  const BackAction = () => (
+    <TopNavigationAction
+      icon={BackIcon}
+      onPress={() => {
+        navigation.navigate("Therapist");
+      }}
+    />
+  );
+
+  const approve = () => {
+    update({
+      isVerified: true,
+      message:comment
+    });
+    alert("The councellor is approved")
+  };
+
+  const disapprove = () => {
+    update({
+      isVerified: false,
+      message:comment
+    });
+    alert("The councellor is diaspproved")
+  };
+
+  return (
+    <Layout
+      style={{
+        flex: 1,
+        // , justifyContent: "center", alignItems: "center"
+      }}
+    >
+      <ApplicationHeader accessoryLeft={BackAction} title="Therapist Details" />
+      <View style={styles.mainContainer}>
+        <View style={styles.chatContainer}>
+          <View
+            style={{
+              flex: 1,
+              padding: 16,
+              paddingTop: 30,
+              backgroundColor: "#fff",
+            }}
+          >
+            <Table borderStyle={{ borderColor: "transparent" }}>
+              <Row
+                data={state.tableHead}
+                style={styless.head}
+                textStyle={styless.text}
+              />
+
+              <TableWrapper
+                // key={index}
+                style={[
+                  styless.row,
+                  // index % 2 && { backgroundColor: "#F7F6E7" },
+                ]}
+              >
+                <Cell data={"Name"} textStyle={styless.text} />
+                <Cell
+                  data={
+                    therapist2.application.firstName +
+                    " " +
+                    therapist2.application.lastName
+                  }
+                  textStyle={styless.text}
+                />
+              </TableWrapper>
+
+              <TableWrapper
+                // key={index}
+                style={[
+                  styless.row,
+                  // index % 2 && { backgroundColor: "#F7F6E7" },
+                ]}
+              >
+                <Cell data={"Gender"} textStyle={styless.text} />
+                <Cell
+                  data={therapist2.application.gender}
+                  textStyle={styless.text}
+                />
+              </TableWrapper>
+
+              <TableWrapper
+                // key={index}
+                style={[
+                  styless.row,
+                  // index % 2 && { backgroundColor: "#F7F6E7" },
+                ]}
+              >
+                <Cell data={"Email"} textStyle={styless.text} />
+                <Cell
+                  data={therapist2.application.email}
+                  textStyle={styless.text}
+                />
+              </TableWrapper>
+
+              <TableWrapper
+                // key={index}
+                style={[
+                  styless.row,
+                  // index % 2 && { backgroundColor: "#F7F6E7" },
+                ]}
+              >
+                <Cell data={"Phone"} textStyle={styless.text} />
+                <Cell
+                  data={therapist2.application.phone}
+                  textStyle={styless.text}
+                />
+              </TableWrapper>
+
+              <TableWrapper
+                // key={index}
+                style={[
+                  styless.row,
+                  // index % 2 && { backgroundColor: "#F7F6E7" },
+                ]}
+              >
+                <Cell data={"Qualification"} textStyle={styless.text} />
+                <Cell
+                  data={therapist2.application.qualificationTitle}
+                  textStyle={styless.text}
+                />
+              </TableWrapper>
+
+              <TableWrapper
+                // key={index}
+                style={[
+                  styless.row,
+                  // index % 2 && { backgroundColor: "#F7F6E7" },
+                ]}
+              >
+                <Cell data={"Qualification title"} textStyle={styless.text} />
+                <Cell
+                  data={therapist2.application.qualificationTitle}
+                  textStyle={styless.text}
+                />
+              </TableWrapper>
+              <TableWrapper
+                // key={index}
+                style={[
+                  styless.row,
+                  // index % 2 && { backgroundColor: "#F7F6E7" },
+                ]}
+              >
+                <Cell data={"Support Document"} textStyle={styless.text} />
+                <Cell data={""} textStyle={styless.text} />
+              </TableWrapper>
+
+              <TableWrapper
+                // key={index}
+                style={[
+                  styless.row,
+                  // index % 2 && { backgroundColor: "#F7F6E7" },
+                ]}
+              >
+                <Cell data={"Status"} textStyle={styless.text} />
+                <Cell data={therapist2.isVerified?" Approved ": " Disapproved"} textStyle={therapist2.isVerified?{color:"green"}:{color:"red"}} />
+              </TableWrapper>
+
+            </Table>
+            <View
+              style={{
+                marginVertical: 32,
+              }}
+            >
+              <Input
+                label="Additional Comment"
+                placeholder="Add the comment here"
+                style={{
+                  height: 200,
+                  flex: 1,
+                }}
+                value={comment}
+                onChangeText={(nextValue) => setComment(nextValue)}
+              />
+            </View>
+
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+              }}
+            >
+              <Button
+                onPress={disapprove}
+                style={{
+                  marginTop: 32,
+                  flex: 1,
+                  height: 46,
+                  marginRight: 16,
+                }}
+              >
+                Disapprove
+              </Button>
+
+              <Button
+                onPress={approve}
+                style={{
+                  marginTop: 32,
+                  flex: 1,
+                  height: 46,
+                  marginLeft: 16,
+                }}
+              >
+                Approve
+              </Button>
+            </View>
+          </View>
+        </View>
+      </View>
+    </Layout>
+  );
+};
+
+const Stack = createStackNavigator();
+
+function TherapistStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Therapist"
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="Therapist" component={TherapistsScreen} />
+      <Stack.Screen name="Details" component={TherapistDetails} />
+    </Stack.Navigator>
+  );
+}
 
 const LogoutIcon = (props) => <Icon {...props} name="log-out-outline" />;
 
@@ -286,13 +535,12 @@ const AccountScreen = () => {
       <ApplicationHeader title="Account" />
       <View style={styles.mainContainer}>
         <ScrollView style={{ height: "100%" }}>
-          <View style={[styles.contentContainer, { backgroundColor: "#E9E9EA" }]}>
-
+          <View
+            style={[styles.contentContainer, { backgroundColor: "#E9E9EA" }]}
+          >
             <LoginInformationEdit />
             <PersonalInformationEdit />
             <CounselorTitle />
-
-
           </View>
         </ScrollView>
       </View>
@@ -301,17 +549,16 @@ const AccountScreen = () => {
 };
 
 const GET_USER = gql`
-query GetUser{
-  users{
-    first_name
-    gender
-    id
-    date_of_birth
+  query GetUser {
+    users {
+      first_name
+      gender
+      id
+      date_of_birth
+    }
   }
-}
-`
+`;
 const HomeScreen = () => {
-
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
   const isBig = useMediaQuery({
@@ -322,31 +569,29 @@ const HomeScreen = () => {
   const BackIcon = (props) => <Icon {...props} name="menu-outline" />;
 
   // data to be loaded from internet
-  var values = ["verified", "pending"]
-  const [dataTherapists, setDataTherapists] = React.useState([{
-    title: 'Name',
-    description: 'Description for Item',
-    status: values[Math.floor(Math.random() * values.length)]
-  }
-    , {
-    title: 'Name',
-    description: 'Description for Item',
-    status: "pending"
-  }
-    , {
-    title: 'Name',
-    description: 'Description for Item',
-    status: "verified"
-  }
-    , {
-    title: 'Name',
-    description: 'Description for Item',
-    status: values[Math.floor(Math.random() * values.length)]
-  }
-
-  ])
-
-
+  var values = ["verified", "pending"];
+  const [dataTherapists, setDataTherapists] = React.useState([
+    {
+      title: "Name",
+      description: "Description for Item",
+      status: values[Math.floor(Math.random() * values.length)],
+    },
+    {
+      title: "Name",
+      description: "Description for Item",
+      status: "pending",
+    },
+    {
+      title: "Name",
+      description: "Description for Item",
+      status: "verified",
+    },
+    {
+      title: "Name",
+      description: "Description for Item",
+      status: values[Math.floor(Math.random() * values.length)],
+    },
+  ]);
 
   const renderBackAction = () => (
     <TopNavigationAction
@@ -361,33 +606,37 @@ const HomeScreen = () => {
   );
 
   const renderItemAccessory = (status) => {
-    console.log("Props passed : ", status)
+    console.log("Props passed : ", status);
     return (
       <View style={{ flexDirection: "row" }}>
-
-        <Button size='tiny'>View</Button>
+        <Button size="tiny">View</Button>
       </View>
-
-    )
-  }
+    );
+  };
 
   const renderItemIcon = (status) => (
     <View>
-      {status === "verified"
-        ? <Icon name='person-done-outline'
+      {status === "verified" ? (
+        <Icon
+          name="person-done-outline"
           fill="green"
           style={{
-            height: 26, width: 26,
-            marginRight: 8
-
-          }} /> :
-        <Icon name='person-delete-outline'
+            height: 26,
+            width: 26,
+            marginRight: 8,
+          }}
+        />
+      ) : (
+        <Icon
+          name="person-delete-outline"
           fill="red"
           style={{
-            height: 26, width: 26,
-            marginRight: 8
-          }} />
-      }
+            height: 26,
+            width: 26,
+            marginRight: 8,
+          }}
+        />
+      )}
     </View>
   );
 
@@ -395,19 +644,17 @@ const HomeScreen = () => {
     <ListItem
       title={`${item.title} ${index + 1}`}
       description={`${item.description} ${index + 1}`}
-      accessoryLeft={props => renderItemIcon(item.status)}
-      accessoryRight={props => renderItemAccessory(item.status)}
-
+      accessoryLeft={(props) => renderItemIcon(item.status)}
+      accessoryRight={(props) => renderItemAccessory(item.status)}
     />
   );
 
-  console.log("error : ", error)
+  console.log("error : ", error);
   return (
     <Layout
       style={{
         flex: 1,
         // , justifyContent: "center", alignItems: "center"
-
       }}
     >
       <ApplicationHeader title="Home" />
@@ -416,19 +663,31 @@ const HomeScreen = () => {
           {/* {loading && <Text>Loading data </Text>}
           {error && <Text>{JSON.stringify(error)}</Text>} */}
           <View>
-            <View style={{
-              flex: 1,
-              height: 100,
-              width: "100%",
-              flexDirection: "row",
-              marginBottom: 10
-            }}>
-              <View style={[styles.dashBoardContentContainer, { height: 100, flex: 1 }]}>
+            <View
+              style={{
+                flex: 1,
+                height: 100,
+                width: "100%",
+                flexDirection: "row",
+                marginBottom: 10,
+              }}
+            >
+              <View
+                style={[
+                  styles.dashBoardContentContainer,
+                  { height: 100, flex: 1 },
+                ]}
+              >
                 <Text>Therapists</Text>
                 <Text>{90}</Text>
               </View>
 
-              <View style={[styles.dashBoardContentContainer, { height: 100, flex: 1 }]}>
+              <View
+                style={[
+                  styles.dashBoardContentContainer,
+                  { height: 100, flex: 1 },
+                ]}
+              >
                 <Text>Attendee</Text>
                 <Text>{10}</Text>
               </View>
@@ -436,15 +695,25 @@ const HomeScreen = () => {
               <View style={[styles.dashBoardContentContainer, { height: 100, flex: 1 }]}>
               </View> */}
 
-              <View style={[styles.dashBoardContentContainer, { height: 100, flex: 1 }]}>
+              <View
+                style={[
+                  styles.dashBoardContentContainer,
+                  { height: 100, flex: 1 },
+                ]}
+              >
                 <Text>Online Users</Text>
                 <Text>{1}</Text>
               </View>
-
-
             </View>
 
-            <View style={{ flex: 1, height: 400, paddingHorizontal: 4, marginBottom: 10 }}>
+            <View
+              style={{
+                flex: 1,
+                height: 400,
+                paddingHorizontal: 4,
+                marginBottom: 10,
+              }}
+            >
               <PieChart
                 data={dataPie}
                 width={screenWidth}
@@ -457,8 +726,13 @@ const HomeScreen = () => {
               />
             </View>
 
-
-            <View style={{ flexDirection: "row", paddingHorizontal: 4, marginBottom: 10 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                paddingHorizontal: 4,
+                marginBottom: 10,
+              }}
+            >
               <View style={{ flex: 1, height: 400 }}>
                 <BarChart
                   style={{}}
@@ -483,25 +757,35 @@ const HomeScreen = () => {
                 />
               </View>
             </View>
-            <View style={{
-              // flex: 1,
-              backgroundColor: "red",
-              // height: 400,
-              marginHorizontal: 4,
-              // marginTop: 10
-            }}>
+            <View
+              style={{
+                // flex: 1,
+                backgroundColor: "red",
+                // height: 400,
+                marginHorizontal: 4,
+                // marginTop: 10
+              }}
+            >
               {/* <Text >
                 Therapists
               </Text> */}
-              <List
-                ListHeaderComponent={() => <Text category='h6' style={{
-                  paddingVertical: 8,
-                  paddingHorizontal: 4
-                }}>Therapists</Text>}
+              {/* <List
+                ListHeaderComponent={() => (
+                  <Text
+                    category="h6"
+                    style={{
+                      paddingVertical: 8,
+                      paddingHorizontal: 4,
+                    }}
+                  >
+                    Therapists
+                  </Text>
+                )}
                 style={{}}
                 data={dataTherapists}
                 renderItem={renderItem}
-              />
+              /> */}
+              <Therapists />
             </View>
           </View>
         </ScrollView>
@@ -561,7 +845,7 @@ const Header = (props) => (
           fontSize: 18,
         }}
       >
-        Logo
+        e-Therapy Platform
       </Text>
     </View>
     <Divider />
@@ -591,11 +875,9 @@ const Footer = (props) => {
     <React.Fragment>
       <View
         style={{
-
           height: 60,
         }}
       >
-
         <Divider />
         <DrawerItem
           title={loading ? "Logging out..." : "Logout"}
@@ -637,7 +919,6 @@ const DrawerContent = ({ navigation, state }) => (
       accessoryLeft={SettingIcon}
       style={styles.drawerItem}
     /> */}
-
   </Drawer>
 );
 
@@ -659,12 +940,100 @@ export const DrawerNavigator = () => {
       }}
     >
       <Screen name="Dashboard" component={HomeScreen} />
-      <Screen name="Therapists" component={TherapistsScreen} />
+      <Screen name="Therapists" component={TherapistStack} />
       {/* <Screen name="Account" component={AccountScreen} /> */}
       {/* <Screen name="Logout" component={LogoutScreen} /> */}
     </Navigator>
   );
 };
+
+const Therapists = () => {
+  const navigation = useNavigation();
+  const { data: therapists, update, error, set } = useCollection(`therapist`, {
+    listen: true,
+  });
+
+  const state = {
+    tableHead: ["Name", "Phone", "Gender", "Actions"],
+  };
+
+  const alertIndex = (index) => {
+    alert(`This is row ${index + 1}`);
+  };
+
+  const goView = (therapist) => {
+    // navigation.navigate("")
+    navigation.navigate("Therapists", {
+      screen: "Details",
+      params: { therapist: JSON.stringify(therapist) },
+    });
+  };
+
+  // const state = this.state;
+  const element = (therapist) => (
+    <TouchableOpacity
+      onPress={() => {
+        goView(therapist);
+      }}
+    >
+      <View style={styless.btn}>
+        <Text style={styless.btnText}>View</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  if (error) retrun(<Text>Error fetching therapists</Text>);
+  if (!therapists) return <ActivityIndicator />;
+  console.log("all therapists here ", therapists);
+  return (
+    <View style={styless.container}>
+      <Table borderStyle={{ borderColor: "transparent" }}>
+        <Row
+          data={state.tableHead}
+          style={styless.head}
+          textStyle={styless.text}
+        />
+        {therapists.map((therapist, index) => (
+          <TableWrapper
+            key={index}
+            style={[styless.row, index % 2 && { backgroundColor: "#F7F6E7" }]}
+          >
+            <Cell
+              data={
+                therapist.application.firstName +
+                " " +
+                therapist.application.lastName
+              }
+              textStyle={styless.text}
+            />
+            <Cell data={therapist.application.phone} textStyle={styless.text} />
+            <Cell
+              data={therapist.application.gender}
+              textStyle={styless.text}
+            />
+
+            <Cell data={element(therapist)} textStyle={styless.text} />
+          </TableWrapper>
+        ))}
+      </Table>
+    </View>
+  );
+};
+
+const styless = StyleSheet.create({
+  container: { flex: 1, padding: 16, paddingTop: 30, backgroundColor: "#fff" },
+  head: { height: 40, backgroundColor: "#537791" },
+  text: { margin: 6 },
+  row: { flexDirection: "row", backgroundColor: "#FFFFFF" },
+  btn: {
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    marginTop: 9,
+    backgroundColor: "#78B7BB",
+    borderRadius: 2,
+  },
+  btnText: { textAlign: "center", color: "#fff" },
+});
 
 const AppNavigator = () => <DrawerNavigator />;
 

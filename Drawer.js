@@ -250,6 +250,10 @@ const ChatUI = () => {
 };
 
 const ChatsScreen = () => {
+  const isBig = useMediaQuery({
+    minWidth: 768,
+  });
+
   const data = [
     {
       name: "Bot One",
@@ -276,111 +280,113 @@ const ChatsScreen = () => {
           >
             <ChatUI />
           </View>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: "#FCFCFC",
-            }}
-          >
-            <View style={{}}>
-              <View
-                style={{
-                  paddingVertical: 8,
-                  paddingHorizontal: 12,
-                  backgroundColor: "#F0F0F0",
-                }}
-              >
-                <Text>Your Counsellor</Text>
-              </View>
-              <View
-                style={{
-                  marginVertical: 12,
-                  alignContent: "center",
-                }}
-              >
+          {isBig && (
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: "#FCFCFC",
+              }}
+            >
+              <View style={{}}>
                 <View
                   style={{
-                    height: 100,
-                    width: 100,
-                    backgroundColor: "#F0F0F0",
-                    alignSelf: "center",
-                    borderRadius: 100,
-                  }}
-                ></View>
-                <Text style={{ textAlign: "center", marginTop: 8 }}>
-                  Therapist One
-                </Text>
-              </View>
-              <View>
-                <View
-                  style={{
-                    marginTop: 12,
-                    paddingVertical: 4,
-                    paddingHorizontal: 12,
-                  }}
-                >
-                  <Text style={{ textDecorationLine: "underline" }}>
-                    Schedule
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    marginTop: 0,
-                    paddingVertical: 4,
-                    paddingHorizontal: 12,
-                  }}
-                >
-                  <Text>Monday , 7:00 pm - 8:00 pm</Text>
-                  <Text>Wednesday , 1:00 pm - 2:00 pm</Text>
-                </View>
-              </View>
-              <View>
-                <View
-                  style={{
-                    marginTop: 24,
                     paddingVertical: 8,
                     paddingHorizontal: 12,
                     backgroundColor: "#F0F0F0",
                   }}
                 >
-                  <Text>Chatbot Support</Text>
+                  <Text>Your Counsellor</Text>
                 </View>
                 <View
                   style={{
-                    paddingVertical: 8,
-                    paddingHorizontal: 12,
+                    marginVertical: 12,
+                    alignContent: "center",
                   }}
                 >
-                  <Text>
-                    In case of Counsellor unavailabity you can just start
-                    chatting with our chatbot
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    paddingVertical: 8,
-                    paddingHorizontal: 12,
-                    flexDirection: "row",
-                  }}
-                >
-                  <Icon
-                    name="robot"
-                    pack="material"
+                  <View
                     style={{
-                      height: 32,
-                      width: 32,
-                      color: "",
+                      height: 100,
+                      width: 100,
+                      backgroundColor: "#F0F0F0",
+                      alignSelf: "center",
+                      borderRadius: 100,
                     }}
-                  />
-                  <Text
-                    style={{ paddingLeft: 8, height: "100%", paddingTop: 6 }}
-                  >
-                    Activate Bot
+                  ></View>
+                  <Text style={{ textAlign: "center", marginTop: 8 }}>
+                    Therapist One
                   </Text>
+                </View>
+                <View>
+                  <View
+                    style={{
+                      marginTop: 12,
+                      paddingVertical: 4,
+                      paddingHorizontal: 12,
+                    }}
+                  >
+                    <Text style={{ textDecorationLine: "underline" }}>
+                      Schedule
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      marginTop: 0,
+                      paddingVertical: 4,
+                      paddingHorizontal: 12,
+                    }}
+                  >
+                    <Text>Monday , 7:00 pm - 8:00 pm</Text>
+                    <Text>Wednesday , 1:00 pm - 2:00 pm</Text>
+                  </View>
+                </View>
+                <View>
+                  <View
+                    style={{
+                      marginTop: 24,
+                      paddingVertical: 8,
+                      paddingHorizontal: 12,
+                      backgroundColor: "#F0F0F0",
+                    }}
+                  >
+                    <Text>Chatbot Support</Text>
+                  </View>
+                  <View
+                    style={{
+                      paddingVertical: 8,
+                      paddingHorizontal: 12,
+                    }}
+                  >
+                    <Text>
+                      In case of Counsellor unavailabity you can just start
+                      chatting with our chatbot
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      paddingVertical: 8,
+                      paddingHorizontal: 12,
+                      flexDirection: "row",
+                    }}
+                  >
+                    <Icon
+                      name="robot"
+                      pack="material"
+                      style={{
+                        height: 32,
+                        width: 32,
+                        color: "",
+                      }}
+                    />
+                    <Text
+                      style={{ paddingLeft: 8, height: "100%", paddingTop: 6 }}
+                    >
+                      Activate Bot
+                    </Text>
+                  </View>
                 </View>
               </View>
             </View>
-          </View>
+          )}
         </View>
       </View>
     </Layout>
@@ -479,7 +485,6 @@ const Quotionares = () => {
       "Widowed",
       "Relatioship",
     ],
-
     religionIndex: 0,
     religionOptions: ["Ýes", "No"],
     therapyIndexIndex: 0,
@@ -785,7 +790,11 @@ const Quotionares = () => {
       {data.isQuestionnaireComplete ? (
         <View>
           {data.isPatientAssignedToCounsellor ? (
-            <Text> Your councelor is : {data.councelor}, You can go ahead and chat with your counselor</Text>
+            <Text>
+              {" "}
+              Your councelor is : {data.councelor}, You can go ahead and chat
+              with your counselor
+            </Text>
           ) : (
             <Text>
               Your quetionare is submitted, wait while you are matched with the
@@ -927,7 +936,7 @@ const Header = (props) => (
       }}
     >
       <Text
-        category="h4"
+        // category="h4"
         style={{
           textAlign: "center",
           backgroundColor: "#FCFCFC",

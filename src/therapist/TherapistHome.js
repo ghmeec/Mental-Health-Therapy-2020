@@ -25,7 +25,12 @@ import {
 } from "@ui-kitten/components";
 import { useMediaQuery } from "react-responsive";
 import { FirebaseContext } from "../../utils/firebase";
-import { View, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 
 import ApplicationHeader from "../../ApplicationHeader";
 import {
@@ -49,6 +54,7 @@ import { useDocument } from "@nandorojo/swr-firestore";
 // import { FirebaseContext } from "../../utils/firebase";
 import { useRecoilState, useRecoilValue } from "recoil";
 import useSWR from "swr";
+import * as Location from "expo-location";
 
 import { messageState } from "../../App";
 
@@ -129,6 +135,7 @@ const SettingIcon = (props) => <Icon {...props} name="settings-outline" />;
 const ApplicationIcon = (props) => <Icon {...props} name="book-outline" />;
 const NotebookIcon = (props) => <Icon {...props} name="book-open-outline" />;
 const ReviewIcon = (props) => <Icon {...props} name="layers-outline" />;
+
 const EditIcon = (props) => (
   <>
     <TouchableOpacity
@@ -261,7 +268,7 @@ const PendingPatientQutionares = () => {
     setLoading(true);
     await update({
       isPatientAssignedToCounsellor: true,
-      councelor:firebase.auth().currentUser.uid
+      councelor: firebase.auth().currentUser.uid,
     });
     setLoading(false);
     setVisible(false);
@@ -344,12 +351,19 @@ const PendingPatientQutionares = () => {
   };
 
   return (
-    <View>
-      {data.length == 0 && <Text category="h4">No Pending Patient</Text>}
+    <View style={{ marginVertical: 24 }}>
+      {data.length == 0 && (
+        <Text style={{ fontSize: 18, fontWeight: "500" }}>
+          No Pending Patient
+        </Text>
+      )}
 
       {data.map((item, index) => (
         <View>
-          <Text category="h4" style={{ marginBottom: 12 }}>
+          <Text
+            category="h4"
+            style={{ fontSize: 18, fontWeight: "500", marginBottom: 12 }}
+          >
             Pending Patients
           </Text>
           <PatientPending data={item} key={index} />
@@ -362,16 +376,22 @@ const PendingPatientQutionares = () => {
 const WelcomeUser = () => {
   const firebase = React.useContext(FirebaseContext);
   const userName = firebase.auth().currentUser.displayName;
-  return <Text>Welcome {userName}</Text>;
+  return (
+    <Text style={{ fontSize: 18, fontWeight: "500" }}>Welcome {userName}</Text>
+  );
 };
 
 const HomeScreen = () => {
+  const firebase = React.useContext(FirebaseContext);
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
   const isBig = useMediaQuery({
     minWidth: 768,
   });
-  const { loading, error, data } = useQuery(GET_USER);
+  const { data, update, set, error } = useDocument(
+    `therapist/${firebase.auth().currentUser.uid}`,
+    { listen: true }
+  );
 
   const BackIcon = (props) => <Icon {...props} name="menu-outline" />;
 
@@ -389,7 +409,8 @@ const HomeScreen = () => {
       }}
     />
   );
-  console.log("error : ", error);
+  // console.log("Debug acceptance : ", data.isVerified);
+
   return (
     <Layout
       style={{
@@ -400,57 +421,78 @@ const HomeScreen = () => {
       <ApplicationHeader title="Home" />
       <View style={styles.mainContainer}>
         <View style={styles.contentContainer}>
-          <ScrollView>
-            <View style={[styles.dashBoardContentContainer, { padding: 12 }]}>
-              <Text status="warning">Your Profile Is Not Complete</Text>
-              <Text>
-                Hello George, Please complete your profile to start providing
-                therapy service{" "}
-              </Text>
-              <Text>Tips and How tos Here</Text>
-              <Button
-                onPress={goToMyApplicationPage}
-                style={{
-                  marginTop: 8,
-                  width: 300,
-                }}
-              >
-                Go to My Application
-              </Button>
-            </View>
+          <View style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
+            <ScrollView>
+              {error && <Text>Error while fetching the details</Text>}
+              {!data && (
+                <View style={{ marginTop: 32 }}>
+                  <ActivityIndicator size={"large"} />
+                </View>
+              )}
+              {data && (
+                <View>
+                  <View
+                    style={[
+                      styles.dashBoardContentContainer,
+                      { padding: 12, marginTop: 12 },
+                    ]}
+                  >
+                    <WelcomeUser />
+                  </View>
 
-            <View
-              style={[
-                styles.dashBoardContentContainer,
-                { padding: 12, marginTop: 12 },
-              ]}
-            >
-              <Text status="danger">Application Rejected</Text>
-              <Text>
-                Hello George, Looks like your application has been rejected{" "}
-              </Text>
-              <Text>Please review and submit the appropriate information</Text>
-              <Button
-                onPress={goToMyApplicationPage}
-                style={{
-                  marginTop: 8,
-                  width: 300,
-                }}
-              >
-                Edit informations
-              </Button>
-            </View>
+                  {data.isVerified ? (
+                    <View
+                      style={[
+                        styles.dashBoardContentContainer,
+                        { padding: 12, marginTop: 12 },
+                      ]}
+                    >
+                      <Text status="success">Application Accepted</Text>
+                      <Text>
+                        Hello ,your application is approved and you are ready to
+                        start offering councelling service
+                      </Text>
 
-            <View
-              style={[
-                styles.dashBoardContentContainer,
-                { padding: 12, marginTop: 12 },
-              ]}
-            >
-              <WelcomeUser />
-              <PendingPatientQutionares />
-            </View>
-          </ScrollView>
+                      <PendingPatientQutionares />
+                    </View>
+                  ) : (
+                    <View
+                      style={[
+                        styles.dashBoardContentContainer,
+                        { padding: 12 },
+                      ]}
+                    >
+                      <Text status="danger">
+                        Your application is rejected !
+                      </Text>
+                      <Text>
+                        Please refer to following message to save a chance and
+                        to be accepted.
+                      </Text>
+                      <Text>{data.message}</Text>
+                      <Text>Tips and How tos Here</Text>
+                      <Button
+                        onPress={goToMyApplicationPage}
+                        style={{
+                          marginTop: 8,
+                          width: 300,
+                        }}
+                      >
+                        Edit My Application
+                      </Button>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              <View
+                style={[
+                  styles.dashBoardContentContainer,
+                  { padding: 12, marginTop: 12 },
+                ]}
+              ></View>
+            </ScrollView>
+          </View>
         </View>
       </View>
     </Layout>
@@ -628,10 +670,12 @@ const TextAnalysis = () => {
   if (!data) return <Text>Analysing the last message ...</Text>;
 
   return (
-    <Text>
-      The Patient potentially is dealing with{" "}
-      <Text style={{ color: "red" }}>{data.sentiment}</Text>
-    </Text>
+    <View style={{ marginVertical: 24 }}>
+      <Text style={{ fontSize: 18 }}>
+        The Patient potentially is dealing with{" "}
+        <Text style={{ fontSize: 18, color: "#0771EC" }}>{data.sentiment}</Text>
+      </Text>
+    </View>
   );
 };
 const CounsellingScreen = () => {
@@ -707,10 +751,79 @@ const CounsellingScreen = () => {
 };
 
 const MyApplicationScreen = () => {
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  const firebase = React.useContext(FirebaseContext);
+
+  const { data: therapist, update, error, set } = useDocument(
+    `therapist/${firebase.auth().currentUser.uid}`,
+    {
+      listen: true,
+    }
+  );
+
+  const { data: user } = useCollection(`users`, {
+    where: ["uid", "==", firebase.auth().currentUser.uid],
+    limit: 1,
+  });
+
+  const getLocation = async () => {
+    let { status } = await Location.requestPermissionsAsync();
+    if (status !== "granted") {
+      alert("You must accept the permission to continue");
+      setErrorMsg("Permission to access location was denied");
+    }
+
+    let location = await Location.getCurrentPositionAsync({});
+    setstate({ ...state, geoLocation: JSON.stringify(location) });
+  };
+
+  useEffect(() => {
+    getLocation();
+  });
+
+  const updateMyAppllication = () => {
+    set({
+      id: firebase.auth().currentUser.uid,
+      isVerified: false,
+      status: "",
+      createdAt: new Date(),
+      application: {
+        ...state,
+      },
+    });
+    alert("Your application is submitted");
+  };
+  // let text = "Waiting..";
+  // if (errorMsg) {
+  //   text = errorMsg;
+  // } else if (location) {
+  //   text = JSON.stringify(location);
+  // }
+
+  console.log("some data ", user);
+  // const firstName=
+  // const lastName=
+
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
   const isBig = useMediaQuery({
     minWidth: 768,
+  });
+  const [state, setstate] = React.useState({
+    firstName: user[0].first_name,
+    lastName: user[0].last_name,
+    gender: "",
+    birthDate: "",
+    date: "",
+    email: "",
+    phone: "",
+    geoLocation: "",
+    qualificationTitle: "",
+    qualificatinDescription: "",
+    // experienceDescription: "",
+    // experienceReview: "",
   });
 
   const [date, setDate] = React.useState(new Date());
@@ -718,6 +831,8 @@ const MyApplicationScreen = () => {
     type: "*/*",
     copyToCacheDirectory: true,
   };
+  const [selectedIndex, setSelectedIndex] = React.useState();
+  const [genderOptions] = React.useState(["", "Male", "Female"]);
 
   const BackIcon = (props) => <Icon {...props} name="menu-outline" />;
 
@@ -747,35 +862,46 @@ const MyApplicationScreen = () => {
             <View
               style={[
                 styles.dashBoardContentContainer,
-                { padding: 12, marginTop: 12 },
+                { paddingHorizontal: 36, paddingVertical: 28, marginTop: 12 },
               ]}
             >
               <Text category="h6">Personal Details</Text>
               <Input
-                // value={value}
+                value={state.firstName}
                 label="First Name"
                 placeholder="George"
                 // caption='Should contain at least 8 symbols'
                 // accessoryRight={renderIcon}
                 // captionIcon={AlertIcon}
                 // secureTextEntry={secureTextEntry}
-                // onChangeText={nextValue => setValue(nextValue)}
+                onChangeText={(nextValue) =>
+                  setstate({ ...state, firstName: nextValue })
+                }
               />
 
               <Input
-                // value={value}
+                value={state.lastName}
                 label="Last Name"
                 placeholder="Millanzi"
                 // caption='Should contain at least 8 symbols'
                 // accessoryRight={renderIcon}
                 // captionIcon={AlertIcon}
                 // secureTextEntry={secureTextEntry}
-                // onChangeText={nextValue => setValue(nextValue)}
+                onChangeText={(nextValue) =>
+                  setstate({ ...state, lastName: nextValue })
+                }
               />
 
               <Select
+                selectedIndex={selectedIndex}
+                onSelect={(index) => setSelectedIndex(index)}
+                style={styles.inputContainer}
                 // selectedIndex={selectedIndex}
-                // onSelect={index => setSelectedIndex(index)}
+                onSelect={(index) => {
+                  setSelectedIndex(index);
+                  setstate({ ...state, gender: genderOptions[index] });
+                }}
+                value={genderOptions[selectedIndex]}
                 label="Gender"
               >
                 <SelectItem title="Male" />
@@ -783,10 +909,12 @@ const MyApplicationScreen = () => {
               </Select>
 
               <Datepicker
-                label="Birth Info"
+                label="Date of Birth"
                 placeholder="Pick Date"
-                date={date}
-                onSelect={(nextDate) => setDate(nextDate)}
+                date={state.birthDate}
+                onSelect={(nextDate) =>
+                  setstate({ ...state, birthDate: nextDate })
+                }
                 accessoryRight={CalendarIcon}
               />
             </View>
@@ -794,59 +922,53 @@ const MyApplicationScreen = () => {
             <View
               style={[
                 styles.dashBoardContentContainer,
-                { padding: 12, marginTop: 12 },
+                { paddingHorizontal: 36, paddingVertical: 28, marginTop: 12 },
               ]}
             >
               <Text category="h6">Address information</Text>
               <Input
-                // value={value}
+                value={state.email}
                 label="Email"
                 placeholder="georgemillaniz1234@gmail.com"
                 // caption='Should contain at least 8 symbols'
                 // accessoryRight={renderIcon}
                 // captionIcon={AlertIcon}
                 // secureTextEntry={secureTextEntry}
-                // onChangeText={nextValue => setValue(nextValue)}
+                onChangeText={(nextValue) =>
+                  setstate({ ...state, email: nextValue })
+                }
               />
 
               <Input
-                // value={value}
+                value={state.phone}
                 label="Phone"
                 placeholder="0733527783"
                 // caption='Should contain at least 8 symbols'
                 // accessoryRight={renderIcon}
                 // captionIcon={AlertIcon}
                 // secureTextEntry={secureTextEntry}
-                // onChangeText={nextValue => setValue(nextValue)}
+                onChangeText={(nextValue) =>
+                  setstate({ ...state, phone: nextValue })
+                }
               />
 
               <Input
-                // value={value}
+                value={state.geoLocation}
                 disabled={true}
                 label="Geo Location"
                 placeholder="2.343424,3.234234423"
                 // caption='Should contain at least 8 symbols'
-                accessoryRight={EditIcon}
+                // accessoryRight={EditIcon}
                 // captionIcon={AlertIcon}
                 // secureTextEntry={secureTextEntry}
                 // onChangeText={nextValue => setValue(nextValue)}
               />
-
-              <Select
-                label="Region"
-                // selectedIndex={selectedIndex}
-                // onSelect={(index) => setSelectedIndex(index)}
-                // value={data[selectedIndex]}
-              >
-                <SelectItem title="Dar Es Salaam" />
-                <SelectItem title="Mbeya" />
-              </Select>
             </View>
 
             <View
               style={[
                 styles.dashBoardContentContainer,
-                { padding: 12, marginTop: 12 },
+                { paddingHorizontal: 36, paddingVertical: 28, marginTop: 12 },
               ]}
             >
               <Text category="h6">Professional Qualification</Text>
@@ -857,8 +979,10 @@ const MyApplicationScreen = () => {
                 // onSelect={(index) => setSelectedIndex(index)}
                 // value={data[selectedIndex]}
               >
-                <SelectItem title="Bsc IN Therapy" />
-                <SelectItem title="Masters In Therapy" />
+                <SelectItem title="Physician" />
+                <SelectItem title="Psychologist" />
+                <SelectItem title="Psychiatrist" />
+                <SelectItem title="Social Worker" />
               </Select>
 
               <Input
@@ -869,7 +993,9 @@ const MyApplicationScreen = () => {
                 // accessoryRight={renderIcon}
                 // captionIcon={AlertIcon}
                 // secureTextEntry={secureTextEntry}
-                // onChangeText={nextValue => setValue(nextValue)}
+                onChangeText={(nextValue) =>
+                  setstate({ ...state, qualificatinDescription: nextValue })
+                }
               />
 
               <Button
@@ -883,7 +1009,7 @@ const MyApplicationScreen = () => {
                     });
                 }}
                 style={{
-                  // width: 100,
+                  //  width: 100,
                   marginTop: 12,
                 }}
               >
@@ -891,10 +1017,10 @@ const MyApplicationScreen = () => {
               </Button>
             </View>
 
-            <View
+            {/* <View
               style={[
                 styles.dashBoardContentContainer,
-                { padding: 12, marginTop: 12 },
+                { paddingHorizontal: 36, paddingVertical: 28, marginTop: 12 },
               ]}
             >
               <Text category="h6">Working experience</Text>
@@ -907,6 +1033,28 @@ const MyApplicationScreen = () => {
                 <SelectItem title="Articles" />
                 <SelectItem title="Books" />
               </Select>
+            </View> */}
+
+            <View
+              style={[
+                styles.dashBoardContentContainer,
+                { paddingHorizontal: 36, paddingVertical: 28, marginTop: 12 },
+              ]}
+            >
+              <Button
+                onPress={() => {
+                  // DocumentPicker.getDocumentAsync(options)
+                  //   .then((res) => {
+                  console.log(" data successful loaded : ", state);
+                  updateMyAppllication();
+                }}
+                style={{
+                  //width: 100,
+                  marginTop: 12,
+                }}
+              >
+                Submit
+              </Button>
             </View>
           </View>
         </ScrollView>
@@ -914,6 +1062,7 @@ const MyApplicationScreen = () => {
     </Layout>
   );
 };
+
 const NotebookScreen = () => {
   const navigation = useNavigation();
   const isDrawerOpen = useIsDrawerOpen();
@@ -1117,15 +1266,15 @@ const DrawerContent = ({ navigation, state }) => (
       style={styles.drawerItem}
     />
     <DrawerItem
-      title="Notebook"
+      title="Notebooks"
       accessoryLeft={NotebookIcon}
       style={styles.drawerItem}
     />
-    <DrawerItem
+    {/* <DrawerItem
       title="Review"
       accessoryLeft={ReviewIcon}
       style={styles.drawerItem}
-    />
+    /> */}
   </Drawer>
 );
 
@@ -1149,7 +1298,7 @@ export const DrawerNavigator = () => {
       <Screen name="Home" component={HomeScreen} />
       <Screen name="Counselling" component={CounsellingScreen} />
       <Screen name="MyApplication" component={MyApplicationScreen} />
-      <Screen name="Notebook" component={NotebookScreen} />
+      <Screen name="Notebooks" component={NotebookScreen} />
       <Screen name="Review" component={ReviewScreen} />
     </Navigator>
   );

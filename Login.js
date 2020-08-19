@@ -27,6 +27,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { FirebaseContext } from "./utils/firebase";
 
 import { useCollection } from "@nandorojo/swr-firestore";
+import { useMediaQuery } from "react-responsive";
 
 const { Navigator, Screen } = createMaterialTopTabNavigator();
 const AlertIcon = (props) => <Icon {...props} name="alert-circle-outline" />;
@@ -355,18 +356,20 @@ const RecoverPassword = () => {
         visible={visible}
         backdropStyle={{
           backgroundColor: "rgba(0, 0, 0, 0.8)",
-          
         }}
         onBackdropPress={() => setVisible(false)}
       >
-        <Card disabled={true} style={{width:380,justifyContent:"center",alignItems:"center"}}>
+        <Card
+          disabled={true}
+          style={{ width: 380, justifyContent: "center", alignItems: "center" }}
+        >
           <Text>Please Provider registred email</Text>
           <Input
             label="Email"
             placeholder="ghmatc@gmail.com"
             style={{
               width: 260,
-              marginTop:12,
+              marginTop: 12,
             }}
             value={email}
             onChangeText={(nextValue) => setEmail(nextValue)}
@@ -441,68 +444,76 @@ const TabNavigator = () => (
   </View>
 );
 
-export const Login = ({}) => (
-  <View style={{ flex: 1, flexDirection: "row-reverse" }}>
-    <View
-      style={{
-        flex: 1,
-        alignContent: "center",
-        justifyContent: "center",
-        // alignItems:"center",
-        backgroundColor: "#FBFAFE",
-        paddingHorizontal: 30,
-      }}
-    >
+export const Login = ({}) => {
+  const isBig = useMediaQuery({
+    minWidth: 768,
+  });
+
+  return (
+    <View style={{ flex: 1, flexDirection: isBig ? "row-reverse" : "column" }}>
+      {isBig && (
+        <View
+          style={{
+            flex: 1,
+            alignContent: "center",
+            justifyContent: "center",
+            // alignItems:"center",
+            backgroundColor: "#FBFAFE",
+            paddingHorizontal: 30,
+          }}
+        >
+          <View
+            style={{
+              height: 100,
+              width: 100,
+              backgroundColor: "#00AE0B",
+            }}
+          ></View>
+          <Text style={styles.loginHeroSubtitles} category="s1">
+            Mental Health e-Therapy Platform
+          </Text>
+          <Text
+            style={{
+              color: "#2E295A",
+              fontWeight: "bold",
+              fontSize: 28,
+              marginVertical: 16,
+            }}
+            category="h4"
+          >
+            Connect. Chat. Resolve. Be happier
+          </Text>
+          <Text style={styles.loginHeroSubtitles} category="s1">
+            Experts who are qualified and understands
+          </Text>
+          <Text style={styles.loginHeroSubtitles} category="s1">
+            Connect to experts to improve your mental wellbeing and learn to
+            manage your mind
+          </Text>
+          <Text style={styles.loginHeroSubtitles} category="s1">
+            You own the counsellor. You can share your private information or
+            totally reamain anonymous
+          </Text>
+          <Text style={styles.loginHeroSubtitles} category="s1">
+            Do not let fester. Start it now
+          </Text>
+        </View>
+      )}
+
       <View
         style={{
-          height: 100,
-          width: 100,
-          backgroundColor: "#00AE0B",
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#E9E9EA",
+          // backgroundColor:"#FFFFFF",
         }}
-      ></View>
-      <Text style={styles.loginHeroSubtitles} category="s1">
-        Mental Health e-Therapy Platform
-      </Text>
-      <Text
-        style={{
-          color: "#2E295A",
-          fontWeight: "bold",
-          fontSize: 28,
-          marginVertical: 16,
-        }}
-        category="h4"
       >
-        Connect. Chat. Resolve. Be happier
-      </Text>
-      <Text style={styles.loginHeroSubtitles} category="s1">
-        Experts who are qualified and understands
-      </Text>
-      <Text style={styles.loginHeroSubtitles} category="s1">
-        Connect to experts to improve your mental wellbeing and learn to manage
-        your mind
-      </Text>
-      <Text style={styles.loginHeroSubtitles} category="s1">
-        You own the counsellor. You can share your private information or
-        totally reamain anonymous
-      </Text>
-      <Text style={styles.loginHeroSubtitles} category="s1">
-        Do not let fester. Start it now
-      </Text>
+        <TabNavigator />
+      </View>
     </View>
-    <View
-      style={{
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#E9E9EA",
-        // backgroundColor:"#FFFFFF",
-      }}
-    >
-      <TabNavigator />
-    </View>
-  </View>
-);
-
+  );
+};
 const styles = StyleSheet.create({
   loginHeroSubtitles: {
     fontSize: 16,

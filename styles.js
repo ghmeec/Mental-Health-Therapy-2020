@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FCFCF",
     // paddingHorizontal: 12,
     marginVertical: 8,
-    width:500
+    // width:500
   
   },
 });
